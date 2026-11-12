@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KFRE Risk Map</title>
+<meta name="description" content="Kidney failure risk (4-variable KFRE) set against the KDIGO 2024 heat map: risk map, action thresholds, drivers and repeat-test stability.">
+<link rel="icon" type="image/svg+xml" href="assets/img/kidney.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F5F9; --surface:#FFFFFF; --s2:#F6F8FB; --ink:#0F2234; --muted:#5A6B7D; --faint:#93A3B4; --line:#E3E9F0;
+  --side:#FFFFFF; --side2:#EEF3F8; --side-ink:#4A5B6C; --side-on:#0F2234;
+  --primary:#0E9F8E; --primary-soft:#E2F5F2; --primary-ink:#FFFFFF;
+  --chart:#2B6CB0; --chart-alt:#9DB8D8;
+  --ok:#22A06B; --warn:#EBA13A; --hi:#E8743B; --bad:#D64545;
+  --kd-low:#5DB884; --kd-mod:#F2C94C; --kd-high:#F2994A; --kd-vhigh:#E05252;
+  --cell-ink:#14212B; --on-bg:rgba(214,69,69,.10); --ok-bg:rgba(34,160,107,.10); --dot:#0F2234; --ring:#FFFFFF;
+  --shadow:0 1px 2px rgba(15,34,52,.04),0 8px 24px rgba(15,34,52,.06);
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A141D; --surface:#101D29; --s2:#142433; --ink:#E5EEF6; --muted:#9DB0C2; --faint:#6B8095; --line:#1F3141;
+  --side:#071019; --side2:#0E1C28; --side-ink:#8FA9B8; --side-on:#FFFFFF;
+  --primary:#2FD1BD; --primary-soft:#123A38; --primary-ink:#06221F;
+  --chart:#7FB2EE; --chart-alt:#3F5F86;
+  --ok:#4CC38A; --warn:#F2B65A; --hi:#F2915C; --bad:#F06B6B;
+  --kd-low:#3F9A68; --kd-mod:#C9A332; --kd-high:#C97535; --kd-vhigh:#C24646;
+  --cell-ink:#FFFFFF; --on-bg:rgba(240,107,107,.14); --ok-bg:rgba(76,195,138,.14); --dot:#F2F6FA; --ring:#0A141D;
+  --shadow:none; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0A141D; --surface:#101D29; --s2:#142433; --ink:#E5EEF6; --muted:#9DB0C2; --faint:#6B8095; --line:#1F3141;
+  --side:#071019; --side2:#0E1C28; --side-ink:#8FA9B8; --side-on:#FFFFFF;
+  --primary:#2FD1BD; --primary-soft:#123A38; --primary-ink:#06221F;
+  --chart:#7FB2EE; --chart-alt:#3F5F86;
+  --ok:#4CC38A; --warn:#F2B65A; --hi:#F2915C; --bad:#F06B6B;
+  --kd-low:#3F9A68; --kd-mod:#C9A332; --kd-high:#C97535; --kd-vhigh:#C24646;
+  --cell-ink:#FFFFFF; --on-bg:rgba(240,107,107,.14); --ok-bg:rgba(76,195,138,.14); --dot:#F2F6FA; --ring:#0A141D;
+  --shadow:none; color-scheme:dark; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+.shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+.sidebar{border-right:1px solid var(--line);background:var(--side);color:var(--side-ink);position:sticky;top:0;height:100vh;padding:22px 16px;display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:11px;padding:0 6px}
+.brand .lg{width:42px;height:42px;border-radius:13px;background:var(--primary-soft);display:grid;place-items:center}
+.brand .lg img{width:24px}
+.brand b{color:var(--side-on);font-size:17px;font-weight:800;letter-spacing:-.01em;display:block;line-height:1.1}
+.brand span{font-size:12px}
+.menu{display:flex;flex-direction:column;gap:4px}
+.menu button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:transparent;color:var(--side-ink);font-size:14.5px;font-weight:600;padding:11px 12px;border-radius:12px;cursor:pointer}
+.menu button svg{width:19px;height:19px;flex:none}
+.menu button:hover{background:var(--side2);color:var(--side-on)}
+.menu button[aria-current=page]{background:var(--primary);color:var(--primary-ink)}
+.sidenote{margin-top:auto;font-size:12px;line-height:1.5;background:var(--side2);border-radius:14px;padding:12px}
+.sidenote b{color:var(--side-on)}
+.main{min-width:0;padding:26px 30px 48px}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.top h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.15}
+.top .sub{font-size:13.5px;color:var(--muted);margin-top:3px}
+.top .actions{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pchips{display:flex;gap:6px;flex-wrap:wrap}
+.pchip{font-size:13px;font-weight:700;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pchip span{color:var(--muted);font-weight:600;margin-right:4px}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--primary);color:var(--primary-ink)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn svg{width:17px;height:17px}
+.grid{display:grid;gap:18px}
+.g12{grid-template-columns:repeat(12,minmax(0,1fr))}
+.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.card{background:var(--surface);border-radius:20px;padding:20px 22px;box-shadow:var(--shadow);border:1px solid var(--line);min-width:0}
+.card h3{margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.card .cap{font-size:13px;color:var(--muted);margin:4px 0 12px}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.info{border:0;background:var(--s2);color:var(--muted);width:26px;height:26px;border-radius:50%;font-weight:800;cursor:pointer;flex:none}
+.explain{font-size:13px;color:var(--muted);background:var(--s2);border-radius:12px;padding:10px 12px;margin-top:10px}
+.explain b{color:var(--ink)}
+.gauge-card{display:flex;flex-direction:column;align-items:center;text-align:center}
+.gauge-card .alt{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;border-radius:999px;padding:5px 11px;margin-top:8px}
+.status.bad{background:var(--on-bg);color:var(--bad)} .status.ok{background:var(--ok-bg);color:var(--ok)} .status.warn{background:rgba(235,161,58,.14);color:var(--warn)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.step{border-radius:16px;padding:14px;background:var(--s2);position:relative}
+.step .n{font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.step .t{font-weight:800;font-size:14.5px;margin:4px 0 10px;line-height:1.3}
+.step .crit{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-top:1px solid var(--line)}
+.step .crit em{font-style:normal;font-weight:800}
+.step .crit em.y{color:var(--bad)} .step .crit em.n{color:var(--faint)}
+.step .res{margin-top:10px;font-weight:800;font-size:13px;border-radius:10px;padding:7px 10px;text-align:center}
+.step .res.y{background:var(--on-bg);color:var(--bad)} .step .res.n{background:var(--surface);color:var(--muted)}
+.callout{margin-top:12px;border-radius:14px;padding:12px 14px;font-size:13.5px;background:var(--on-bg)}
+.callout.info{background:var(--primary-soft)}
+.toggles{display:flex;gap:6px;flex-wrap:wrap}
+.tg{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+.tg[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.ln{width:20px;border-top:2.5px solid var(--chart);display:inline-block}
+svg text{font-family:"Manrope",system-ui,sans-serif}
+.chart{display:block;max-width:100%;height:auto}
+.halo{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--s2);border-radius:14px;padding:12px 14px}
+.kpi .k{font-size:12px;color:var(--muted);font-weight:700}
+.kpi .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:2px}
+.donuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.donut{display:flex;flex-direction:column;align-items:center;text-align:center;font-size:12.5px;color:var(--muted);font-weight:700}
+.findings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.finding{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.finding .n{font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--primary)}
+.finding p{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:20px;align-items:center;background:linear-gradient(135deg,var(--side),var(--side2));color:var(--side-ink);border-radius:22px;padding:24px 26px}
+.hero h2{color:var(--side-on);margin:0 0 8px;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.hero p{margin:0;font-size:14px}
+.nephron{color:var(--primary);height:180px;display:flex;justify-content:center}
+.nephron svg{height:100%;width:auto}
+details.acc{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow)}
+details.acc summary{cursor:pointer;font-weight:800;font-size:15px;list-style:none}
+details.acc summary::-webkit-details-marker{display:none}
+details.acc summary::after{content:"+";float:right;color:var(--primary);font-weight:800}
+details.acc[open] summary::after{content:"–"}
+.methods{font-size:13.5px;color:var(--muted);columns:2;column-gap:28px;margin-top:10px}
+.methods p{margin:0 0 9px;break-inside:avoid}
+.methods b{color:var(--ink)}
+.eq{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--s2);border-radius:10px;padding:8px 10px;display:block;overflow-x:auto;white-space:nowrap;margin:6px 0;color:var(--ink)}
+ol.refs{font-size:13px;color:var(--muted);padding-left:18px;margin:10px 0 0}
+ol.refs li{margin-bottom:5px}
+.credits{font-size:12px;color:var(--muted);margin-top:20px}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,15,25,.45);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--surface);z-index:41;box-shadow:-10px 0 40px rgba(0,0,0,.18);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer .dh{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.drawer .dh b{font-size:17px;font-weight:800}
+.drawer .db{padding:16px 20px 24px;overflow-y:auto}
+.x{border:0;background:var(--s2);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--ink)}
+.field{margin-top:14px}
+.field>label,.field>.lab{display:block;font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
+.row{display:flex;gap:8px}
+input[type=number]{width:100%;height:44px;font:inherit;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);background:var(--s2);border:1.5px solid transparent;border-radius:12px;padding:0 12px}
+input[type=number]:focus{border-color:var(--primary);background:var(--surface);outline:none}
+select{height:44px;font:inherit;font-size:14px;font-weight:600;color:var(--ink);background:var(--s2);border:1.5px solid transparent;border-radius:12px;padding:0 8px}
+.seg{display:flex;gap:4px;background:var(--s2);border-radius:12px;padding:4px}
+.seg button{flex:1;font-size:13.5px;font-weight:700;padding:8px;border:0;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin:8px 0;cursor:pointer}
+.check input{accent-color:var(--primary);width:17px;height:17px}
+.ex{display:grid;gap:8px}
+.ex button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;cursor:pointer;color:var(--ink)}
+.ex button b{display:block;font-size:13.5px}
+.ex button span{font-size:12px;color:var(--muted)}
+.ex button:hover{border-color:var(--primary)}
+.err{color:var(--bad);font-size:13px;margin-top:10px;font-weight:700}
+:focus-visible{outline:2.5px solid var(--primary);outline-offset:2px}
+.tabbar{display:none}
+.mtop{display:none}
+@media (max-width: 1100px){ .c4,.c5,.c6,.c7,.c8{grid-column:span 12} .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width: 900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .sidebar{display:none}
+  .main{padding:14px 14px calc(96px + env(safe-area-inset-bottom,0px))}
+  .mtop{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20;background:var(--bg);margin:-14px -14px 12px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line)}
+  .mtop img{width:22px} .mtop .lg{width:36px;height:36px;border-radius:11px;background:var(--primary-soft);display:grid;place-items:center}
+  .mtop b{font-weight:800;font-size:16px}
+  .mtop .btn{margin-left:auto;padding:8px 12px}
+  .top .actions{margin-left:0;width:100%} .top .actions .btn{display:none}
+  .top h1{font-size:22px}
+  .tabbar{display:flex;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.14);padding:6px;justify-content:space-around}
+  .tabbar button{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:700;padding:6px 4px;border-radius:14px;flex:1;cursor:pointer}
+  .tabbar button svg{width:21px;height:21px}
+  .tabbar button[aria-current=page]{color:var(--primary);background:var(--primary-soft)}
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .findings{grid-template-columns:minmax(0,1fr)}
+  .donuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero{grid-template-columns:minmax(0,1fr)} .nephron{height:120px}
+  .methods{columns:1}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.arc{transition:stroke-dasharray .5s ease}
+/* user-selected backgrounds */
+:root[data-palette="light"]{--bg:#F2F5F9;--surface:#FFFFFF;--s2:#F6F8FB;--ink:#0F2234;--muted:#5A6B7D;--faint:#93A3B4;--line:#E3E9F0;--side:#FFFFFF;--side2:#EEF3F8;--side-ink:#4A5B6C;--side-on:#0F2234;--primary:#0E9F8E;--primary-soft:#E2F5F2;--primary-ink:#FFFFFF;--chart:#2B6CB0;--chart-alt:#9DB8D8;--ok:#22A06B;--warn:#EBA13A;--hi:#E8743B;--bad:#D64545;--kd-low:#5DB884;--kd-mod:#F2C94C;--kd-high:#F2994A;--kd-vhigh:#E05252;--cell-ink:#14212B;--on-bg:rgba(214,69,69,.10);--ok-bg:rgba(34,160,107,.10);--dot:#0F2234;--ring:#FFFFFF;--shadow:0 1px 2px rgba(15,34,52,.04),0 8px 24px rgba(15,34,52,.06);color-scheme:light;}
+:root[data-palette="mint"]{--bg:#ECF6F2;--surface:#FFFFFF;--s2:#F2F9F6;--ink:#0F2234;--muted:#5A6B7D;--faint:#93A3B4;--line:#D7EAE2;--side:#DDF0E8;--side2:#CBE7DB;--side-ink:#355A4E;--side-on:#0F2B24;--primary:#0E8F7E;--primary-soft:#D6F0E8;--primary-ink:#FFFFFF;--chart:#1F6F8B;--chart-alt:#9DB8D8;--ok:#22A06B;--warn:#EBA13A;--hi:#E8743B;--bad:#D64545;--kd-low:#5DB884;--kd-mod:#F2C94C;--kd-high:#F2994A;--kd-vhigh:#E05252;--cell-ink:#14212B;--on-bg:rgba(214,69,69,.10);--ok-bg:rgba(34,160,107,.10);--dot:#0F2234;--ring:#FFFFFF;--shadow:0 1px 2px rgba(15,34,52,.04),0 8px 24px rgba(15,34,52,.06);color-scheme:light;}
+:root[data-palette="sky"]{--bg:#EDF3FB;--surface:#FFFFFF;--s2:#F3F7FD;--ink:#0F2234;--muted:#5A6B7D;--faint:#93A3B4;--line:#D9E4F3;--side:#DCE9F8;--side2:#C9DCF3;--side-ink:#33506F;--side-on:#0F2240;--primary:#2563EB;--primary-soft:#DCE7FB;--primary-ink:#FFFFFF;--chart:#1D4ED8;--chart-alt:#93B4F0;--ok:#22A06B;--warn:#EBA13A;--hi:#E8743B;--bad:#D64545;--kd-low:#5DB884;--kd-mod:#F2C94C;--kd-high:#F2994A;--kd-vhigh:#E05252;--cell-ink:#14212B;--on-bg:rgba(214,69,69,.10);--ok-bg:rgba(34,160,107,.10);--dot:#0F2234;--ring:#FFFFFF;--shadow:0 1px 2px rgba(15,34,52,.04),0 8px 24px rgba(15,34,52,.06);color-scheme:light;}
+:root[data-palette="lavender"]{--bg:#F3F1FA;--surface:#FFFFFF;--s2:#F8F6FD;--ink:#0F2234;--muted:#5A6B7D;--faint:#93A3B4;--line:#E3DEF3;--side:#E8E2F7;--side2:#D9D0F1;--side-ink:#4B3F6E;--side-on:#21183D;--primary:#6D4BC2;--primary-soft:#E9E2F8;--primary-ink:#FFFFFF;--chart:#5B3FB0;--chart-alt:#B9A8E6;--ok:#22A06B;--warn:#EBA13A;--hi:#E8743B;--bad:#D64545;--kd-low:#5DB884;--kd-mod:#F2C94C;--kd-high:#F2994A;--kd-vhigh:#E05252;--cell-ink:#14212B;--on-bg:rgba(214,69,69,.10);--ok-bg:rgba(34,160,107,.10);--dot:#0F2234;--ring:#FFFFFF;--shadow:0 1px 2px rgba(15,34,52,.04),0 8px 24px rgba(15,34,52,.06);color-scheme:light;}
+:root[data-palette="peach"]{--bg:#FBF3EC;--surface:#FFFFFF;--s2:#FDF8F3;--ink:#0F2234;--muted:#5A6B7D;--faint:#93A3B4;--line:#F0E1D3;--side:#F7E4D3;--side2:#F0D3BA;--side-ink:#6B4A30;--side-on:#3A2414;--primary:#C8611F;--primary-soft:#FBE5D3;--primary-ink:#FFFFFF;--chart:#2B6CB0;--chart-alt:#9DB8D8;--ok:#22A06B;--warn:#EBA13A;--hi:#E8743B;--bad:#D64545;--kd-low:#5DB884;--kd-mod:#F2C94C;--kd-high:#F2994A;--kd-vhigh:#E05252;--cell-ink:#14212B;--on-bg:rgba(214,69,69,.10);--ok-bg:rgba(34,160,107,.10);--dot:#0F2234;--ring:#FFFFFF;--shadow:0 1px 2px rgba(15,34,52,.04),0 8px 24px rgba(15,34,52,.06);color-scheme:light;}
+:root[data-palette="dark"]{--bg:#0A141D;--surface:#101D29;--s2:#142433;--ink:#E5EEF6;--muted:#9DB0C2;--faint:#6B8095;--line:#1F3141;--side:#071019;--side2:#0E1C28;--side-ink:#8FA9B8;--side-on:#FFFFFF;--primary:#2FD1BD;--primary-soft:#123A38;--primary-ink:#06221F;--chart:#7FB2EE;--chart-alt:#3F5F86;--ok:#4CC38A;--warn:#F2B65A;--hi:#F2915C;--bad:#F06B6B;--kd-low:#3F9A68;--kd-mod:#C9A332;--kd-high:#C97535;--kd-vhigh:#C24646;--cell-ink:#FFFFFF;--on-bg:rgba(240,107,107,.14);--ok-bg:rgba(76,195,138,.14);--dot:#F2F6FA;--ring:#0A141D;--shadow:none;color-scheme:dark;}
+.themes{display:flex;gap:7px;flex-wrap:wrap}
+.themes button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;position:relative}
+.themes button[aria-pressed=true]{border-color:var(--primary);box-shadow:0 0 0 2px var(--surface) inset}
+.themes button span{position:absolute;inset:0;border-radius:50%}
+.theme-label{font-size:11.5px;font-weight:800;color:var(--side-ink);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.labs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.labt{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;box-shadow:var(--shadow);min-width:0}
+.labt .pl{width:52px;height:52px;flex:none;border-radius:14px;background:#FFFFFF;display:grid;place-items:center;overflow:hidden;box-shadow:0 1px 4px rgba(15,34,52,.08)}
+.labt .pl img{max-width:42px;max-height:42px}
+.labt .pl .neph{color:var(--primary);height:44px;display:flex}
+.labt .pl .neph svg{height:100%;width:auto}
+.labt .k{font-size:12px;color:var(--muted);font-weight:700}
+.labt .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.labt .v small{font-size:12px;color:var(--muted);font-weight:700;margin-left:3px}
+.thumb{display:inline-grid;place-items:center;background:#FFFFFF;border-radius:9px;width:30px;height:30px;box-shadow:0 1px 3px rgba(15,34,52,.1);flex:none;overflow:hidden}
+.thumb img{max-width:24px;max-height:24px}
+@media (max-width: 1100px){ .labs{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+.banner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;background:var(--primary-soft);border-radius:20px;padding:18px 22px;border:1px solid var(--line)}
+.banner h3{font-size:17px;font-weight:800;margin:0 0 6px;letter-spacing:-.01em}
+.banner p{margin:0;font-size:13.5px;color:var(--muted);max-width:70ch}
+.banner .facts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.banner .facts span{font-size:12px;font-weight:700;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.plate{background:#FFFFFF;border-radius:18px;padding:10px;display:grid;place-items:center;box-shadow:0 2px 10px rgba(15,34,52,.08)}
+.plate img{display:block;height:auto}
+.banner .neph{color:var(--primary);height:120px;width:90px}
+.banner .neph svg{height:100%;width:auto}
+.step .ill{position:absolute;right:12px;top:12px}
+.step .ill img{width:18px}
+.empty{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center}
+@media (max-width: 900px){ .banner{grid-template-columns:minmax(0,1fr)} .banner .plate,.banner .neph{justify-self:start} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="vendor/react/react.production.min.js"></script>
+<script src="vendor/react/react-dom.production.min.js"></script>
+<script src="assets/js/cohort.js"></script>
+<script>
+(function(){
+const h=React.createElement,{useState,useMemo,useRef,useEffect}=React;
+const KIDNEY_SRC='assets/img/kidney.svg';
+const DIALYSIS_SRC='assets/img/dialyser.svg';
+const URINE_SRC='assets/img/urine-test.svg';
+const BLOOD_SRC='assets/img/blood-tube.svg';
+const PILL_SRC='assets/img/tablets.svg';
+const HEART_SRC='assets/img/heart.svg';
+const BOOK_SRC='assets/img/book.svg';
+const NEPHRON_SVG="\n<svg aria-hidden=\"true\" focusable=\"false\" preserveAspectRatio=\"xMidYMid meet\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 297.92 457.97\">\n  <defs>\n    <style>\n      .cls-1 {\n        fill: currentColor;\n      }\n    </style>\n  </defs>\n  <g>\n    <path class=\"cls-1\" d=\"m295.19,47.41c.04,4.93.08,9.86.12,14.79.1,11.94.19,23.88.29,35.81.12,14.66.23,29.32.34,43.98.1,13.07.2,26.13.28,39.2.05,7.41.11,14.82.11,22.23,0,3.25.05,6.49.62,9.7.11.63,1.07.36.96-.27-.89-5.06-.57-10.33-.59-15.46-.02-4.24-.04-8.49-.07-12.73-.08-12.59-.17-25.19-.27-37.78-.11-14.66-.22-29.31-.34-43.97-.1-12.44-.2-24.88-.3-37.32-.03-4.05-.07-8.11-.1-12.16-.02-1.91.09-3.86-.05-5.77,0-.08,0-.17,0-.26,0-.64-1.01-.64-1,0h0Z\"/>\n    <path class=\"cls-1\" d=\"m129.73,53.89c6.41-3.03,11.31,4.7,11.59,10.26.39,7.42-3.72,15.09-7.15,21.43-5.09,9.42-14.25,15.81-24.35,18.92s-21.85,3.2-32.3.17c-6.16-1.79-11.34-7.14-14.82-12.31-2.81-4.17-4.03-9.57-8.11-12.76-6.85-5.36-16.83-2.49-23.62,1.46-3.88,2.26-8.05,5.35-9.77,9.64s-.63,10.11,3.14,12.92c2.3,1.72,6,2.5,8.71,3.21,3.27.85,6.6,1.42,9.92,2.02s6.89,1.28,10.25,2.25c2.83.81,5.44,1.72,7.53,3.87,1.74,1.79,3.02,4.24,2.79,6.8-.32,3.49-3.16,5.54-5.78,7.43-4.39,3.18-8.82,6.39-12.65,10.24-3.26,3.27-6.29,7.21-7.17,11.85s.79,9.71,3.76,13.48c3.21,4.09,8.45,6.63,13.67,6.35s8.09-4.34,10.71-8.56c3.14-5.05,3.03-11.09,4.48-16.68s4.39-10.75,8.94-14.09c2.05-1.51,4.34-2.67,6.66-3.69,2.74-1.21,5.56-1.58,8.55-1.53,4.71.08,9.26,1.49,13.17,4.11,7.7,5.15,12.26,14.04,14.65,22.76,3.2,11.66,1.89,23.93,1.69,35.87-.51,31.01-.8,62.02-.87,93.03-.07,31.01.09,62.02.46,93.03.19,15.43.43,30.87.72,46.3.14,7.12,1.19,13.59,3.88,20.24.92,2.28,1.84,5.78,3.85,7.3,1.57,1.19,3.58,1.89,5.56,1.94,1.39.04,3.12-.23,4-1.44.56-.76.59-1.79.78-2.68.42-1.95.86-3.9,1.24-5.86,1.39-7.1,2.38-14.27,2.95-21.48,1.16-14.85.48-29.81-1.96-44.5-1.09-6.55-2.1-13.5-4.71-19.64-2.4-5.63-5.95-10.87-7.32-16.9-.76-3.35-.51-6.85-.51-10.26v-34.34c0-30.58,0-61.15,0-91.73v-68.86c0-7.36-.26-14.22,5.05-19.99,11.66-12.68,33.62-25.89,24.82-46.09-2.23-5.11-6.27-9.08-10.01-13.1-4.12-4.43-8.59-9.2-8.45-15.63.11-5.35,2.57-11.02,6.46-14.71,2.18-2.06,4.99-3,7.71-4.13s5.67-2.3,8.57-3.27c4.36-1.47,8.88-2.58,13.51-2.48,4.33.1,9.7.72,12.37,4.55s2.76,9.07,2.76,13.56c0,3.75-.88,8.16.2,11.82,2.96,10.05,16.91,1.75,22.74-.19,5.24-1.74,11.39-2.96,16.26.42,3.48,2.42,4.72,6.94,4.98,11.01.22,3.46-.4,8.85-2.96,11.45-3.02,3.06-7.32,4.63-10.45,7.6-2.96,2.82-3.58,5.93-2.21,9.73,2.8,7.8,10.46,10.41,18.09,11.1,8.93.8,17.98-.12,26.93.24,1.76.07,3.11-1.14,4.15-2.47,1.74-2.23,1.81-4.42,1.81-7.14,0-4.58.05-9.15-.04-13.73-.15-7.57-1.03-15.13-1.61-22.67-.05-.64-1.05-.64-1,0,.59,7.71,1.49,15.43,1.61,23.16.08,4.81.03,9.63.03,14.44,0,2.82-1.46,7.38-4.96,7.41-2.01.01-4.04-.25-6.06-.25-9.06,0-18.7,1.4-27.54-1.17-3.99-1.16-7.6-3.41-9.58-7.16-1.06-2.01-2.1-4.64-1.48-6.93s2.4-3.85,4.14-5.19c1.84-1.42,3.84-2.61,5.76-3.91,1.52-1.03,3.4-2.12,4.19-3.82,2.74-5.83,2.87-12.35.34-18.28-1.9-4.44-6.92-6.59-11.53-6.58-5.3.01-10.41,2.14-15.25,4.07-4.16,1.66-11.42,5.24-14.68.19-.92-1.42-1.05-3.09-1.04-4.74.02-2.36.12-4.71.15-7.07.1-7.79-.47-17.59-9.61-19.63s-17.64.48-26.11,3.84c-4.74,1.88-9.48,3.4-12.72,7.53-2.94,3.76-4.83,8.61-4.93,13.4-.24,11.5,12.46,18.02,17.55,27.12,2.61,4.67,3.77,10.24,2.54,15.5-1.12,4.78-3.94,8.96-7.11,12.63s-7.04,7.19-10.73,10.61c-3.48,3.22-7.32,6.5-10.1,10.36-3.9,5.41-3.56,11.84-3.56,18.17v22.45c0,30.42,0,60.83,0,91.25v79.97c0,3.38-.27,6.9.19,10.25.76,5.55,3.65,10.5,6.09,15.44,3.09,6.28,4.46,12.86,5.72,19.71,2.76,14.98,3.68,30.29,2.67,45.49-.52,7.82-1.56,15.61-3.06,23.31-.36,1.82-.74,3.63-1.15,5.44-.35,1.53-.34,3.03-2.03,3.6-2.53.86-6.44-.39-7.8-2.68-1.8-3.02-3.04-6.64-4.12-9.97-1.15-3.57-1.98-7.27-2.16-11.02-.36-7.57-.3-15.19-.42-22.77-.51-31.01-.79-62.02-.86-93.03s.09-61.73.46-92.6c.19-15.43.43-30.87.72-46.3.18-9.2-1.18-18.25-5.04-26.68-3.48-7.58-9.11-14.57-17.07-17.65-4.1-1.59-8.56-1.98-12.91-1.42-4.57.58-9.36,3.21-12.86,6.17-3.67,3.11-6.11,7.54-7.61,12.06-1.97,5.93-1.44,12.56-4.83,18.02-1.57,2.53-2.9,5-5.47,6.67-2.91,1.89-6.67,1.7-9.87.63-6.08-2.04-10.8-8.11-11.17-14.55-.63-11.22,11.94-19.21,19.82-24.91,3.57-2.58,6.94-5.78,5.81-10.61-.87-3.73-4.04-6.73-7.53-8.08-6.45-2.49-13.5-3.14-20.22-4.57-3.46-.73-7.1-1.59-10.28-3.17s-5.02-5.39-4.92-8.91c.17-5.83,5.47-9.94,10.1-12.62,4.13-2.4,8.89-4.16,13.71-4.23s9.3,1.94,11.84,6.15c1.52,2.52,2.48,5.34,4.06,7.85s3.37,4.82,5.44,6.91c3.93,3.98,8.44,6.6,13.88,7.84,5.05,1.15,10.26,1.62,15.44,1.42,9.95-.4,20.01-3.3,28.1-9.22,3.86-2.82,7.22-6.3,9.79-10.33,3.42-5.37,6.49-11.84,7.93-18.05,1.16-5,.85-10.18-2.42-14.35-2.51-3.19-6.21-4.68-10.01-2.88-.58.27-.07,1.14.5.86h0Z\"/>\n    <path class=\"cls-1\" d=\"m275.18,213.83c-2.04-29.16-1.81-58.37-1.72-87.59,0-1.72,0-3.44.01-5.17,0-1.59.36-3.66-.05-5.2s-2.09-2.58-3.43-3.22c-2.26-1.08-4.54-.85-7-.77-3.52.12-7.02.38-10.53.64-6.88.51-13.8,1.08-20.7.61s-13.8-2.36-20.16-5.6c-5.17-2.63-9.59-6.56-12.69-11.47-1.5-2.38-2.69-4.95-3.56-7.63-.68-2.08-1.91-5.24-1.27-7.4.88-3,4.69-4.85,7.17-6.31,2.71-1.6,5.82-3.1,7.9-5.53,1.68-1.95,1.97-4.27.67-6.52-1.89-3.25-6.05-3.64-9.45-3.84-2.39-.14-4.79-.09-7.19-.22-2.96-.16-5.05-1.28-7.06-3.5-3.18-3.51-3.45-8.49-4.87-12.8-.6-1.84-1.15-3.21-2.83-4.27-1.57-.99-3.45-1.49-5.28-1.66-3.75-.34-7.79,1.16-8.79,5.16-.57,2.28.44,4.16,1.91,5.84,2.24,2.55,4.15,5.39,5.68,8.42,2.8,5.56,4.16,11.73,4.42,17.93.25,5.88-.02,12.65-1.9,18.26-.95,2.83-2.3,5.62-3.45,8.38-1.42,3.43-3.38,6.04-6.07,8.61-2.54,2.43-5.26,4.65-7.79,7.09-1.11,1.07-1.08,1.07-1.12,2.61-.04,1.93-.07,3.85-.1,5.78-.12,7.7-.16,15.4-.14,23.1.07,30.67,1.05,61.32,1.67,91.97.62,30.65.88,61.34-.47,91.97-.16,3.7-.35,7.41-.57,11.11-.11,1.99.05,4.33-.63,6.23-.5,1.38-1.23,2.71-1.76,4.08-2.41,6.26-3.69,12.91-4.27,19.58-.28,3.23-.66,6.69-.31,9.91.41,3.82.92,7.6,1.13,11.44.39,7.16.23,14.35-.16,21.5-.41,7.32-1.08,14.62-1.73,21.92-.32,3.58-.66,7.16-.92,10.75-.23,3.05-1.41,6.3-4.17,7.99-2.02,1.24-5.21.87-7.47.5-2.11-.35-4.16-1.06-6.02-2.12-3.66-2.09-6.4-5.4-8.37-9.08-4.1-7.66-5.34-16.84-5.13-25.43.33-13.6,1-27.2,1.21-40.82.44-29.89.07-59.81-1.57-89.67-.38-6.95-.18-14.31-2.19-21.02-1.82-6.09-4.53-11.81-5.73-18.09-2.75-14.45-1.57-29.16-.5-43.71.54-7.23,1.02-14.48.95-21.73-.06-6.16-.1-12.27-2.98-17.86-2.13-4.13-5.6-9.36-10.04-11.17-2.89-1.18-5.95-1.03-8.47.91-5.53,4.27-7.05,12.7-9.22,18.93-.77,2.2-2.4,3.92-3.52,5.96-.86,1.56-1.51,3.38-2.78,4.64-1.11,1.11-2.62,2-3.97,2.8-4.59,2.71-9.87,4.14-15.2,4.19-10.28.11-20.55-4.81-25.92-13.74-7.36-12.23-11.42-26.12-6.62-40.12.95-2.76,1.89-5.75,4.77-6.97,1.93-.82,4.1-.85,6.17-.95,2.98-.15,6.64-.25,8.41-3.08.99-1.59,1.77-3.99.79-5.75s-3.4-3.12-5.36-3.67c-5.1-1.43-10.47.61-15.64.47-10.64-.29-17.52-11.65-18.13-21.27-.31-4.88.71-9.84,3.13-14.1s6.47-7.67,10.7-10.36c7.9-5.03,17.3-8.15,24-14.91,1.53-1.54,2.87-3.27,3.94-5.16,1.21-2.15,1.89-4.51,3.01-6.7,1.32-2.59,2.61-5.2,3.51-7.97s1.2-5.61,2.13-8.31c3.67-10.59,14.9-20.1,26.45-19.96,10.43.12,21.37,1.25,30.85,5.92,4.33,2.13,8.26,5.04,11.33,8.79,1.62,1.98,3.38,4.41,4.16,6.87.73,2.29,2.3,5.3.12,7.22-.48.43.23,1.13.71.71,1.52-1.34,1.69-3.02,1.18-4.91-.54-2.02-1.21-3.99-2.22-5.82-2.34-4.25-5.67-7.88-9.62-10.68-8.18-5.79-18.42-7.93-28.24-8.73-5.18-.42-10.26-.78-15.28.81s-9.47,4.32-13.12,8-6.49,8.16-7.75,13.06c-.77,2.99-1.29,6-2.44,8.89s-2.72,5.27-3.8,8.01c-1.92,4.9-4.56,8.76-8.77,12-3.93,3.02-8.4,5.25-12.76,7.55-8.18,4.3-16.79,9.18-20.4,18.19-3.26,8.13-2.24,17.92,2.81,25.12,2.42,3.45,5.98,6.64,10.03,8.01,5.17,1.76,10.61-.12,15.87-.2,1.43-.02,2.88.09,4.26.52,1.46.46,3.86,1.61,4.49,3.12,1.23,2.98-1.2,6.09-3.94,6.83-3.66.99-7.67,0-11.21,1.63-1.65.76-2.79,2.02-3.56,3.64-1.4,2.94-2.37,6.13-2.99,9.31-1.22,6.29-.87,12.79.77,18.97,2.71,10.16,8.28,21.1,17.7,26.47,8.34,4.76,18.8,5.57,27.74,2.07,2.31-.9,4.5-2.08,6.53-3.51.9-.63,2.13-1.38,2.83-2.24,1.02-1.26,1.6-3.15,2.4-4.57,1.12-1.99,2.61-3.52,3.37-5.67.6-1.7,1.13-3.42,1.7-5.13,2.1-6.34,5.9-17.83,14.77-14.2,2.89,1.18,4.91,3.87,6.73,6.31,1.92,2.58,3.52,5.44,4.45,8.53,1.03,3.44,1.02,7.13,1.12,10.69s.05,7.31-.09,10.96c-.57,14.54-2.61,29.05-1.88,43.63.36,7,1.23,14.11,3.45,20.79s4.8,12.35,5.26,19.23c1.02,15.14,1.69,30.31,2.08,45.48.78,30.27.45,60.56-.6,90.82-.31,8.86-.54,17.38,2.16,25.97,2.29,7.27,6.64,14.46,14.07,17.3,3.22,1.23,8.51,2.35,11.68.53,4.8-2.75,4.82-8.28,5.23-13.09,1.24-14.56,2.89-29.14,2.69-43.78-.05-3.63-.21-7.25-.53-10.86s-.95-7.34-.83-11.08c.23-7.19,1.15-14.4,3.28-21.29.5-1.63,1.07-3.24,1.72-4.82.56-1.37,1.41-2.69,1.67-4.15.65-3.71.47-7.79.66-11.55.39-7.85.68-15.7.87-23.55.76-30.95.13-61.92-.6-92.86s-1.54-62.2-1.13-93.31c.02-1.78.05-3.55.08-5.33.02-.95-.15-2.17.06-3.11.26-1.16,1.24-1.87,2.06-2.63,2.53-2.34,5.21-4.52,7.62-6.97,2.07-2.11,3.64-4.22,4.8-6.92,1.29-3.02,2.81-6.12,3.88-9.22.81-2.35,1.05-5.11,1.38-7.57.39-2.92.61-5.86.61-8.81,0-5.72-.85-11.48-2.87-16.85-1.06-2.81-2.42-5.5-4.08-8.01s-5.61-5.67-5.21-8.97c.73-6.01,9.42-6.02,13.16-3.04,1.93,1.54,2.38,4.85,2.96,7.16.49,1.99.92,4.01,1.76,5.9,1.58,3.55,4.9,6.85,8.85,7.22,4.61.44,9.76-.44,14.15,1.3,3.99,1.58,4.46,5.75,1.52,8.49-2.55,2.38-5.88,3.86-8.82,5.71-2.2,1.38-4.91,3.12-5.71,5.75-.56,1.86.19,4.05.66,5.85.63,2.42,1.51,4.79,2.63,7.03,2.24,4.49,5.49,8.44,9.48,11.48,10.45,7.96,23.81,9.62,36.55,9.05,7-.31,13.97-1.09,20.97-1.31,2.93-.09,6.51-.25,8.56,2.37,1.01,1.29.52,3.83.52,5.39,0,2.01,0,4.02-.02,6.03-.05,14.52-.16,29.04.02,43.56s.69,29.09,1.7,43.6c.04.64,1.05.64,1,0h0Z\"/>\n  </g>\n  <g>\n    <path class=\"cls-1\" d=\"m132.57.3c.97,2.6,2.31,5.05,3.28,7.65,1.13,3.03,1.71,6.34,1.95,9.56.25,3.39-.16,6.72-.63,10.07-.41,2.95-.78,5.92-1.9,8.7s-2.42,4.88-4.76,6.6c-1.89,1.39-4.11,2.63-6.43,3.09-2.67.53-5.49.05-8.02,1.24-.83.39-1.6.95-2.14,1.7-.72,1.01-.76,2.34-1.48,3.34-1.5,2.1-4.79,2.17-6.86.98-1.78-1.02-3.22-2.75-4.48-4.33-1.05-1.32-1.97-2.72-2.99-4.06-1.52-2-3.29-4.39-5.65-5.43-1.78-.78-3.87-.65-5.77-.46-2.27.23-4.47,1.05-6.35,2.35-3.95,2.73-6.14,7.53-5.67,12.31.19,1.92.85,3.98,2.41,5.23s3.48.93,4.84-.42c1.93-1.9,2.22-5.03,4.77-6.37,2.34-1.23,6.64-1.94,8.37.6,1.58,2.31.61,5.67-.71,7.86-1.39,2.3-3.58,4.04-6.14,4.84-2.14.66-4.55.78-6.43,2.11-1.66,1.17-2.31,3.08-2.27,5.05.05,2.28.73,4.76,1.74,6.8s2.75,3.34,4.9,4.03,4.71.97,7.02,1c1.97.03,4.17-.31,5.5-1.91,1.51-1.81,1.37-4.48,1.41-6.69.06-3.15.01-6.42,1.13-9.41.93-2.5,2.76-4.91,5.36-5.8,2.74-.93,5.67.3,8.42-.53,2.53-.77,4.45-3.02,6.13-4.94s3.32-3.8,5.14-5.56c1.63-1.58,3.62-3.59,5.92-4.08,2.88-.62,5.41,1.69,7.4,3.43,9.13,7.98,14.24,19.09,14.12,31.26-.03,3.18-.39,6.34-.99,9.47-.06.31.42.45.48.13,2.24-11.62.65-23.53-6.14-33.4-1.5-2.18-3.21-4.23-5.13-6.05-1.7-1.61-3.55-3.37-5.61-4.51-1.7-.93-3.59-1.23-5.38-.41-2.01.91-3.71,2.53-5.27,4.06-1.83,1.8-3.49,3.73-5.18,5.65-2.25,2.55-4.57,4.81-8.18,4.76-2.57-.04-5.02-.46-7.34.94-1.89,1.14-3.24,3.05-4.07,5.06-1.04,2.54-1.21,5.34-1.27,8.05s.51,6.73-1.77,8.72c-1.99,1.74-5.14,1.33-7.56,1.06-2.68-.3-5.7-.8-7.57-2.95-1.75-2.02-2.65-5.51-2.7-8.15-.03-1.44.29-2.87,1.28-3.96s2.42-1.57,3.81-1.92c2.3-.58,4.52-.98,6.49-2.39,1.77-1.27,3.18-3.04,4-5.06.76-1.88,1.15-4.2.28-6.11s-2.68-2.59-4.6-2.59c-2.07,0-4.6.58-6.11,2.07-1.89,1.85-2.22,5.46-4.96,6.43-3.32,1.18-4.89-3.32-5.06-5.77-.2-2.86.58-5.77,2.17-8.15s4.07-4.19,6.83-5.07c2.05-.65,4.91-.98,7.05-.49,2.99.7,5.19,3.78,6.9,6.12.87,1.19,1.68,2.39,2.6,3.54,2.26,2.85,5.15,6.02,9.16,5.2,1.89-.38,3.12-1.57,3.72-3.37.5-1.5,1.15-2.56,2.6-3.29s3.13-.86,4.75-.94c2.48-.13,4.66-.5,6.89-1.63,2-1.01,4-2.34,5.45-4.07s2.39-4.08,3.06-6.2c.88-2.78,1.17-5.77,1.54-8.66.8-6.17.68-12.49-1.52-18.39-.97-2.6-2.31-5.04-3.28-7.65-.11-.3-.59-.17-.48.13h0Z\"/>\n    <path class=\"cls-1\" d=\"m99.16,74.9c-.71-.79-1.08-1.55-1.47-2.51-.29-.72-.81-1.31-1.33-1.88-1.4-1.52-3.12-2.41-5.22-2.09-.91.14-1.8.47-2.54,1.01-.8.57-1.14,1.27-1.62,2.09-1.16,1.97-3.92,2.59-6.03,2.66-.32.01-.32.51,0,.5,1.82-.06,3.74-.48,5.23-1.59.63-.47,1.08-1.02,1.43-1.72.53-1.04,1.37-1.76,2.47-2.17,2.4-.89,4.49.02,6.12,1.87.61.69.94,1.3,1.26,2.14.31.78.79,1.42,1.34,2.03.22.24.57-.11.35-.35h0Z\"/>\n    <path class=\"cls-1\" d=\"m72.46,44.54c-1.57-.64-1.97-2.76-1.95-4.26.03-1.99,1.27-3.39,2.9-4.42.79-.5,1.66-.84,2.42-1.38.86-.6,1.63-1.32,2.51-1.89,1.38-.9,3.15-1.29,4.71-1.77.97-.3,1.95-.56,2.92-.88,2.17-.72,4.4-.56,6.66-.37,2.41.2,4.79.71,6.91,1.9,1.99,1.11,3.68,2.66,5.31,4.23,1.78,1.72,3.31,3.41,4.54,5.57,1.06,1.86,2.44,3.32,4.38,4.27l-.05-.39c-2.74,2.16-6.43,4.87-10.09,3.17-2.98-1.38-3.6-5.64-5.49-8.07-1.64-2.1-3.97-3.29-6.59-3.59-2.42-.28-5-.31-7.4.16-5.03.99-9.72,4.17-11.52,9.12-1.75,4.82-.58,10.63,2.94,14.37,1.46,1.55,4.08,3.55,6.28,2.3,1.18-.67,1.83-2.2,2.51-3.31.88-1.43,1.81-3.25,3.42-4,2.2-1.03,3.69,1.34,3.05,3.28-.59,1.76-2.53,2.65-4.16,3.15-2.82.87-5.5,1.32-7.36,3.84-3.81,5.19-1.25,11.95,1.74,16.85,1.56,2.55,3.6,4.67,6.44,5.75,2.68,1.02,5.7,1.04,8.36-.05s5.05-3.32,6.24-6.04c1.51-3.42,1.16-7.28,1.99-10.87.46-2.02,1.29-4,2.8-5.46,1.65-1.6,3.59-1.91,5.81-1.97,3.49-.1,6.58-1.08,9.07-3.65l-.42-.24c-.64,3.22-2.72,5.58-5.64,6.96-2.31,1.09-3.85,2.34-4.08,5.03s.82,5.67-.55,8.22c-1.87,3.5-5.47.51-7.28-1.39-.22-.23-.58.12-.35.35,1.44,1.52,3.98,3.99,6.29,3s2.68-4.22,2.52-6.46c-.12-1.71-.41-3.57.18-5.23.69-1.97,2.52-2.55,4.2-3.41,2.72-1.39,4.61-3.95,5.2-6.94.05-.23-.23-.43-.42-.24-1.18,1.23-2.59,2.19-4.19,2.79-1.79.67-3.58.64-5.46.74-2.71.14-4.9,1.27-6.43,3.55-3.66,5.44-1.01,12.91-5.59,17.95s-12.53,4.67-16.79-.55c-3.95-4.84-7.58-13.49-2.78-18.93,2.23-2.53,5.59-2.38,8.42-3.79,1.85-.92,3.37-2.7,2.79-4.88-.5-1.92-2.47-2.6-4.13-1.61-.99.59-1.74,1.56-2.37,2.51-.95,1.43-1.97,4.28-3.71,4.83-2.96.92-5.99-2.93-7.17-5.14-1.33-2.49-1.88-5.41-1.56-8.21.69-5.98,5.5-10.22,11.17-11.56,2.75-.65,6-.7,8.78-.17,3.79.71,5.79,3.52,7.37,6.79,1.27,2.63,2.62,5,5.82,5.23s6.06-1.87,8.51-3.8c.12-.1.08-.33-.05-.39-1.15-.56-2.18-1.32-3.01-2.3s-1.39-2.27-2.13-3.39c-1.26-1.93-3.06-3.52-4.75-5.08s-3.52-3.02-5.65-3.95-4.45-1.26-6.74-1.38c-2.12-.12-4.03-.19-6.05.49-1.48.5-3,.89-4.49,1.38-1.83.59-3.23,1.31-4.75,2.5-1.73,1.36-3.91,2.06-5.34,3.79-1.72,2.08-1.64,6.71,1.2,7.86.3.12.43-.36.13-.48h0Z\"/>\n    <path class=\"cls-1\" d=\"m77.11,46.66c1.25.19,2.41.74,3.33,1.6s1.98,2.32,1.68,3.62c-.27,1.17-1.26,2.18-2.14,2.92s-1.99,1.47-3.18,1.7c-.32.06-.18.54.13.48,1.32-.25,2.52-1.06,3.51-1.93s2.04-2.02,2.2-3.32-.83-2.82-1.75-3.72c-1-.97-2.28-1.62-3.66-1.83-.31-.05-.45.43-.13.48h0Z\"/>\n    <path class=\"cls-1\" d=\"m72.85,57.56c-1.48.82-2.19,2.46-2.67,4-.53,1.71-1.16,3.71-.92,5.5.26,1.95,1.27,4.14,2.6,5.58s3.1,2.24,5.02,2.39c.32.02.32-.48,0-.5-1.84-.14-3.52-.95-4.75-2.33s-2.25-3.58-2.41-5.47c-.13-1.54.41-3.24.85-4.71s1.08-3.21,2.54-4.02c.28-.16.03-.59-.25-.43h0Z\"/>\n    <path class=\"cls-1\" d=\"m128.63,6.79c3.21,7.67,3.53,16.69,2.03,24.8-.6,3.22-1.27,7.16-3.97,9.31-4.29,3.42-9.59,1.91-13.36-1.44-3.25-2.89-5.57-6.73-9.13-9.3s-8.44-3.91-12.86-3.98c-2.97-.04-6.03.78-8.9,1.48-3.3.81-6.49,2.03-9.53,3.55-2.14,1.08-4.23,2.26-5.58,4.32-1.13,1.73-1.64,3.84-1.33,5.9.24,1.6.82,3.18,2.24,4,1,.58,2.26,1.46,3.44,1.6.32.04.32-.46,0-.5-1.13-.13-2.5-1.11-3.45-1.69-1.72-1.05-2.01-4.01-1.73-5.82.83-5.3,6.51-7.57,10.95-9.27,6.01-2.31,12.82-3.88,19.18-2.35,2.33.56,4.64,1.44,6.65,2.74s3.61,3.04,5.16,4.81c2.66,3.04,5.35,6.43,9.27,7.86,3.54,1.29,7.74.39,10.3-2.43,1.89-2.07,2.49-5.35,3.02-8,1.67-8.38,1.42-17.76-1.9-25.71-.12-.29-.61-.16-.48.13h0Z\"/>\n    <path class=\"cls-1\" d=\"m76.25,48.95c.84.44,1.69.9,2.41,1.52.29.25.48.47.46.87-.01.36-.16.72-.32,1.04-.14.26-.3.55-.53.74-.21.18-.47.31-.72.43-.51.26-1.05.5-1.6.67-.31.09-.18.58.13.48.48-.15.95-.35,1.4-.57.43-.2.94-.42,1.26-.78.43-.47.76-1.14.86-1.77.04-.29.04-.59-.08-.86-.12-.3-.37-.5-.61-.7-.73-.61-1.57-1.08-2.41-1.51-.29-.15-.54.28-.25.43h0Z\"/>\n    <path class=\"cls-1\" d=\"m71.78,55.36c-2.16.73-3.58,3.04-4.56,4.96-1.25,2.45-1.92,5.01-1.26,7.75,1.27,5.29,5.82,9.51,11.35,9.63.32,0,.32-.49,0-.5-5.2-.11-9.42-4-10.77-8.91-.72-2.61-.18-5.07.98-7.45.92-1.88,2.29-4.29,4.39-5.01.3-.1.17-.59-.13-.48h0Z\"/>\n    <path class=\"cls-1\" d=\"m81.54,77.55c1.66.14,3.6.39,5.14-.4.73-.38,1.44-1.01,2.03-1.57.72-.69,1.26-1.62,2.09-2.19,1.67-1.13,3.42.77,4.15,2.19.84,1.63,1.87,2.81,3.6,3.54.3.12.43-.36.13-.48-1.09-.46-2.03-1.19-2.69-2.18-.43-.64-.69-1.36-1.16-1.98-.76-.98-2-2.27-3.38-1.93-.82.2-1.43.8-1.96,1.41-.66.76-1.3,1.46-2.09,2.09-1.73,1.38-3.75,1.19-5.84,1.01-.32-.03-.32.47,0,.5h0Z\"/>\n    <path class=\"cls-1\" d=\"m102.56,82.07c1.56,2.18,4.55,2.7,7.06,2.7,2.95,0,5.24-1.33,5.89-4.32.68-3.14-.58-6.45.41-9.53.62-1.91,2.09-2.79,3.75-3.72,1.16-.65,2.26-1.39,2.81-2.64s.61-2.81,1.02-4.18c.43-1.47,1.05-2.88,1.78-4.22,1.44-2.61,3.56-5.46,6.51-6.44,3.26-1.08,6.07,1.36,8,3.72,2.21,2.71,4.08,5.86,5,9.25,1.18,4.32,1.3,8.94,1.36,13.39.07,4.9-.19,9.79-.74,14.66-.04.32.46.32.5,0,.93-8.14,1.29-16.69.06-24.82-.53-3.54-1.69-6.69-3.6-9.7-1.52-2.4-3.33-4.96-5.85-6.39-5.15-2.93-9.73,2.37-11.91,6.55-.65,1.24-1.19,2.54-1.59,3.88-.47,1.58-.42,3.49-1.42,4.84s-2.78,1.86-4.11,2.83c-1.04.76-1.75,1.8-2.1,3.04-1,3.55.95,7.69-.96,11.03-1.21,2.13-3.58,2.36-5.8,2.25-2.01-.1-4.4-.7-5.63-2.42-.19-.26-.62-.01-.43.25h0Z\"/>\n  </g>\n</svg>";
+const COHORT=(window.KFRE_COHORT||[]),HAS_COHORT=COHORT.length>0;
+// ---------- equations ----------
+const KF={a:-0.2201,s:0.2467,e:-0.5567,l:0.4510,ca:7.036,cs:0.5642,ce:7.222,cl:5.137};
+const BS={nonNA:{2:0.9832,5:0.9365},NA:{2:0.9750,5:0.9240}};
+const egfr2021=(scr,age,female)=>{const x=scr/88.4,k=female?0.7:0.9,a=female?-0.241:-0.302;return 142*Math.pow(Math.min(x/k,1),a)*Math.pow(Math.max(x/k,1),-1.2)*Math.pow(0.9938,age)*(female?1.012:1)};
+const terms=(age,male,eg,acr)=>({age:KF.a*(age/10-KF.ca),sex:KF.s*(male-KF.cs),egfr:KF.e*(eg/5-KF.ce),acr:KF.l*(Math.log(acr)-KF.cl)});
+const lp=(age,male,eg,acr)=>{const t=terms(age,male,eg,acr);return t.age+t.sex+t.egfr+t.acr};
+const risk=(L,set,t)=>1-Math.pow(BS[set][t],Math.exp(L));
+const lpFromRisk=(r,set,t)=>Math.log(Math.log(1-r)/Math.log(BS[set][t]));
+const lpStar=(p,set,t)=>Math.log(Math.log(1-p)/Math.log(BS[set][t]));
+const isoEgfr=(age,male,acr,p,set,t)=>{const tt=terms(age,male,36.11,acr);return 5*(KF.ce+(tt.age+tt.sex+tt.acr-lpStar(p,set,t))/(-KF.e))};
+const pcr2acr=(pcr,female,dm,htn)=>Math.exp(5.2659+0.2934*Math.log(Math.min(pcr/50,1))+1.5643*Math.log(Math.max(Math.min(pcr/500,1),0.1))+1.1109*Math.log(Math.max(pcr/500,1))-0.0773*female+0.0797*dm+0.1265*htn);
+const gCat=e=>e>=90?'G1':e>=60?'G2':e>=45?'G3a':e>=30?'G3b':e>=15?'G4':'G5';
+const aCat=a=>a<30?'A1':a<300?'A2':'A3';
+const KD={G1:['low','mod','high'],G2:['low','mod','high'],G3a:['mod','high','vhigh'],G3b:['high','vhigh','vhigh'],G4:['vhigh','vhigh','vhigh'],G5:['vhigh','vhigh','vhigh']};
+const KDNAME={low:'Low risk',mod:'Moderate risk',high:'High risk',vhigh:'Very high risk'};
+const kdigo=(e,a)=>KD[gCat(e)][['A1','A2','A3'].indexOf(aCat(a))];
+const nf=(v,d)=>v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct=p=>{const v=100*p;if(v<0.01)return '<0.01%';return (v<1?nf(v,2):nf(v,1))+'%'};
+const ord=n=>{const v=n%100;return n+((v>=11&&v<=13)?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th'))};
+const logPos=(p,lo,hi)=>Math.max(0,Math.min(1,(Math.log10(Math.max(p*100,Math.pow(10,lo)))-lo)/(hi-lo)));
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function simulate(age,male,scr,acr,cvCr,cvAcr){
+  const r=mulberry(20261111),N=3000,sc=Math.sqrt(Math.log(1+cvCr*cvCr)),sa=Math.sqrt(Math.log(1+cvAcr*cvAcr));
+  const g=()=>{let u=0,v=0;while(u===0)u=r();while(v===0)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+  const r2=new Float64Array(N),r5=new Float64Array(N);
+  for(let i=0;i<N;i++){const s2=scr*Math.exp(sc*g()-sc*sc/2),a2=acr*Math.exp(sa*g()-sa*sa/2);const L=lp(age,male,egfr2021(s2,age,!male),a2);r2[i]=risk(L,'nonNA',2);r5[i]=risk(L,'nonNA',5);}
+  const frac=(arr,th,ge)=>{let c=0;for(const x of arr)if(ge?x>=th:x>th)c++;return c/arr.length};
+  return {r2,r5,p:[['5-year ≥3%',frac(r5,0.03,true)],['5-year >5%',frac(r5,0.05,false)],['2-year >10%',frac(r2,0.10,false)],['2-year >40%',frac(r2,0.40,false)]]};
+}
+function useWidth(init){const [w,setW]=useState(init);const ro=useRef(null);
+  const ref=React.useCallback(el=>{if(ro.current){ro.current.disconnect();ro.current=null}
+    if(el){setW(Math.max(240,Math.round(el.getBoundingClientRect().width)||init));if(window.ResizeObserver){ro.current=new ResizeObserver(es=>{for(const e of es)setW(Math.max(240,Math.round(e.contentRect.width)))});ro.current.observe(el)}}},[]);
+  return [ref,w];}
+// ---------- icons ----------
+const IC={
+ overview:[['rect',{x:3,y:3,width:7,height:9,rx:2}],['rect',{x:14,y:3,width:7,height:5,rx:2}],['rect',{x:14,y:12,width:7,height:9,rx:2}],['rect',{x:3,y:16,width:7,height:5,rx:2}]],
+ map:[['path',{d:'M3 3v18h18'}],['path',{d:'M7 14l4-4 3 3 5-6'}]],
+ explain:[['path',{d:'M4 20V10M10 20V4M16 20v-7M22 20H2'}]],
+ repeat:[['path',{d:'M4 12a8 8 0 0 1 14-5.3L20 9'}],['path',{d:'M20 4v5h-5'}],['path',{d:'M20 12a8 8 0 0 1-14 5.3L4 15'}],['path',{d:'M4 20v-5h5'}]],
+ study:[['path',{d:'M4 19.5V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2.5z'}],['path',{d:'M8 7h6M8 11h6'}]],
+ edit:[['path',{d:'M12 20h9'}],['path',{d:'M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z'}]],
+ user:[['circle',{cx:12,cy:8,r:4}],['path',{d:'M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7'}]]};
+const Ico=({n})=>h('svg',{viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':'true'},(IC[n]||[]).map(([t,a],i)=>h(t,Object.assign({key:i},a))));
+// ---------- charts ----------
+function Gauge({p,ths,size}){
+  const W=size,H=size*0.66,cx=W/2,cy=H-20,r=W*0.4,sw=W*0.085,lo=-1,hi=2;
+  const ang=v=>Math.PI*(1-logPos(v,lo,hi)), pt=(a,rr)=>[cx+rr*Math.cos(a),cy-rr*Math.sin(a)];
+  const arc=(v0,v1,col,w)=>{const a0=ang(v0),a1=ang(v1),[x0,y0]=pt(a0,r),[x1,y1]=pt(a1,r);return h('path',{d:`M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}`,stroke:col,strokeWidth:w,fill:'none',strokeLinecap:'butt'})};
+  const zones=[[0.001,ths[0],'var(--ok)'],[ths[0],ths[1],'var(--warn)'],[ths[1],1,'var(--bad)']];
+  const [nx,ny]=pt(ang(p),r-sw*0.1),[bx,by]=pt(ang(p),r*0.18);
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':`Gauge at ${pct(p)}`},
+    zones.map(([a,b,c],i)=>h('g',{key:i,opacity:.22},arc(a,b,c,sw))),
+    arc(0.001,Math.max(p,0.0011),'var(--chart)',sw*0.42),
+    ths.map(t=>{const [x0,y0]=pt(ang(t),r-sw/2-2),[x1,y1]=pt(ang(t),r+sw/2+2),[tx,ty]=pt(ang(t),r+sw/2+12);return h('g',{key:t},h('line',{x1:x0,y1:y0,x2:x1,y2:y1,stroke:'var(--ink)',strokeWidth:2}),h('text',{x:tx,y:ty+4,fontSize:11,fontWeight:700,fill:'var(--muted)',textAnchor:'middle'},(t*100)+'%'))}),
+    h('circle',{cx:nx,cy:ny,r:sw*0.42,fill:'var(--surface)',stroke:'var(--chart)',strokeWidth:3}),
+    h('text',{x:cx,y:cy-r*0.28,fontSize:W*0.13,fontWeight:800,fill:'var(--ink)',textAnchor:'middle'},pct(p)),
+    h('text',{x:cx-r,y:cy+16,fontSize:10.5,fill:'var(--faint)',textAnchor:'middle'},'0.1%'),h('text',{x:cx+r,y:cy+16,fontSize:10.5,fill:'var(--faint)',textAnchor:'middle'},'100%'));
+}
+function HeatGrid({g,a,W}){
+  const G=['G1','G2','G3a','G3b','G4','G5'],A=['A1','A2','A3'],L=56,T=30,cw=(W-L)/3,ch=Math.min(46,cw*0.55),H=T+6*ch+6;
+  const counts={};COHORT.forEach(c=>{const k=gCat(c[0])+aCat(c[1]);(counts[k]=counts[k]||[]).push(c[3])});
+  const med=a=>{const s=a.slice().sort((x,y)=>x-y),n=s.length;return n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2};
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':`KDIGO heat map with the patient in cell ${g} ${a}`},
+    A.map((x,j)=>h('text',{key:x,x:L+j*cw+cw/2,y:18,fontSize:12,fontWeight:800,fill:'var(--muted)',textAnchor:'middle'},x+(j===0?' <30':j===1?' 30–299':' ≥300'))),
+    G.map((y,i)=>h('g',{key:y},h('text',{x:L-10,y:T+i*ch+ch/2+4,fontSize:12,fontWeight:800,fill:'var(--muted)',textAnchor:'end'},y),
+      A.map((x,j)=>{const k=KD[y][j],on=y===g&&x===a,cs=counts[y+x];return h('g',{key:x},
+        h('rect',{x:L+j*cw+2,y:T+i*ch+2,width:cw-4,height:ch-4,rx:9,fill:`var(--kd-${k})`,opacity:on?1:0.55,stroke:on?'var(--ink)':'none',strokeWidth:on?3:0}),
+        cs?h('text',{x:L+j*cw+cw/2,y:T+i*ch+ch/2+4,fontSize:cw<92?10:11.5,fontWeight:700,fill:'var(--cell-ink)',textAnchor:'middle'},`n=${cs.length} · ${nf(med(cs),med(cs)<1?2:1)}%`):null,
+        on?h('text',{x:L+j*cw+cw/2,y:T+i*ch+ch/2+(cs?-9:4),fontSize:11,fontWeight:800,fill:'var(--cell-ink)',textAnchor:'middle'},'● patient'):null)}))));
+}
+function RiskMap({age,male,eg,acr,showCohort,showNA,W}){
+  const narrow=W<560,H=Math.round(W*(narrow?0.9:0.58)),m={l:46,r:narrow?50:64,t:26,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const X=a=>m.l+(Math.log10(Math.min(Math.max(a,1),5000))/Math.log10(5000))*iw, Y=e=>m.t+(1-Math.min(Math.max(e,0),60)/60)*ih;
+  const gB=[['G3a',45,60],['G3b',30,45],['G4',15,30],['G5',0,15]],aB=[[1,30],[30,300],[300,5000]];
+  const cells=[];gB.forEach(([g,lo,hi])=>aB.forEach(([l2,h2],ai)=>{cells.push(h('rect',{key:g+ai,x:X(l2),y:Y(hi),width:X(h2)-X(l2),height:Y(lo)-Y(hi),fill:`var(--kd-${KD[g][ai]})`,opacity:.16}))}));
+  const mk=(set,col,width,opa)=>[[0.03,5,'3%','5-yr','0'],[0.10,2,'10%','2-yr','7 5'],[0.40,2,'40%','2-yr','2 4']].map(([p,t,lab,hz,dash])=>{
+    const pts=[];for(let i=0;i<=140;i++){const a=Math.pow(10,i/140*Math.log10(5000)),e=isoEgfr(age,male,a,p,set,t);if(e>=0&&e<=60)pts.push([X(a),Y(e)]);}
+    if(!pts.length)return null;const end=pts[pts.length-1],lx=Math.min(end[0]+6,W-m.r+6);
+    return h('g',{key:set+lab+hz,opacity:opa},h('polyline',{points:pts.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' '),fill:'none',stroke:col,strokeWidth:width,strokeDasharray:dash}),
+      set==='nonNA'?h('text',{x:lx,y:end[1]+(end[1]<m.t+10?10:-2),fontSize:12,fill:col,fontWeight:700},h('tspan',null,lab),h('tspan',{x:lx,dy:14,fontWeight:500},hz)):null)});
+  const px=X(acr),py=Y(eg),e40=isoEgfr(age,male,acr,0.40,'nonNA',2),right=px>m.l+iw*0.62;
+  let gap=null;
+  if(eg<60){ if(e40>0&&e40<eg) gap=h('g',null,h('line',{x1:px,y1:py,x2:px,y2:Y(e40),stroke:'var(--dot)',strokeWidth:1.5,strokeDasharray:'3 3'}),h('text',{className:'halo',x:right?px-9:px+9,textAnchor:right?'end':'start',y:(py+Y(e40))/2+4,fontSize:12,fontWeight:700,fill:'var(--ink)'},nf(eg-e40,1)+' to 40%'));
+    else if(e40<=0) gap=h('g',null,h('line',{x1:px,y1:py,x2:px,y2:Y(0),stroke:'var(--dot)',strokeWidth:1.5,strokeDasharray:'3 3'}),h('text',{className:'halo',x:right?px-9:px+9,textAnchor:right?'end':'start',y:(py+Y(0))/2+4,fontSize:12,fontWeight:700,fill:'var(--ink)'},'40% never reached'));}
+  const ticks=narrow?[1,10,100,1000]:[1,3,10,30,100,300,1000,3000];
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':'Risk map of eGFR against ACR with KDIGO cells and KFRE contours'},
+    cells,[15,30,45].map(v=>h('line',{key:'g'+v,x1:m.l,x2:m.l+iw,y1:Y(v),y2:Y(v),stroke:'var(--line)'})),[30,300].map(v=>h('line',{key:'a'+v,x1:X(v),x2:X(v),y1:m.t,y2:m.t+ih,stroke:'var(--line)'})),
+    [['G3a',52.5],['G3b',37.5],['G4',22.5],['G5',7.5]].map(([t,v])=>h('text',{key:t,className:'halo',x:m.l+7,y:Y(v)+4,fontSize:12,fontWeight:700,fill:'var(--muted)'},t)),
+    [['A1',5.5],['A2',95],['A3',1220]].map(([t,v])=>h('text',{key:t,x:X(v),y:m.t-9,fontSize:12,fontWeight:700,fill:'var(--muted)',textAnchor:'middle'},t)),
+    showCohort?COHORT.map((c,i)=>h('circle',{key:i,cx:X(c[1]),cy:Y(c[0]),r:3,fill:'var(--faint)',opacity:.6})):null,
+    showNA?mk('NA','var(--chart-alt)',1.8,1):null,mk('nonNA','var(--chart)',2.4,1),gap,
+    eg<=60?h('circle',{cx:px,cy:py,r:8.5,fill:'var(--dot)',stroke:'var(--ring)',strokeWidth:3}):h('text',{x:px,y:m.t+14,textAnchor:'middle',fontSize:12,fill:'var(--ink)'},'eGFR ≥60 ↑'),
+    h('line',{x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih,stroke:'var(--muted)'}),h('line',{x1:m.l,x2:m.l,y1:m.t,y2:m.t+ih,stroke:'var(--muted)'}),
+    ticks.map(t=>h('text',{key:'x'+t,x:X(t),y:m.t+ih+18,fontSize:12,fill:'var(--muted)',textAnchor:'middle'},t.toLocaleString('en-US'))),
+    [0,15,30,45,60].map(t=>h('text',{key:'y'+t,x:m.l-8,y:Y(t)+4,fontSize:12,fill:'var(--muted)',textAnchor:'end'},t)),
+    h('text',{x:m.l+iw/2,y:H-6,fontSize:12,fill:'var(--muted)',textAnchor:'middle'},'Urine ACR (mg/g, log scale)'),
+    h('text',{transform:`translate(13 ${m.t+ih/2}) rotate(-90)`,fontSize:12,fill:'var(--muted)',textAnchor:'middle'},'eGFR (mL/min/1.73 m²)'));
+}
+// generic "what-if" line chart: x domain [x0,x1] (log optional), y = risk (log)
+function WhatIf({xs,fn,cur,ths,xlab,xlog,rev,vlines,W,xt}){
+  const H=Math.round(Math.max(210,W*0.58)),m={l:44,r:12,t:12,b:40},iw=W-m.l-m.r,ih=H-m.t-m.b,ylo=-2;
+  const [a0,a1]=xs,tx=v=>xlog?Math.log10(v):v,frac=v=>(tx(v)-tx(a0))/(tx(a1)-tx(a0)),X=v=>m.l+(rev?1-frac(v):frac(v))*iw,Y=p=>m.t+(1-(Math.log10(Math.max(p*100,0.01))-ylo)/(2-ylo))*ih;
+  const N=120,pts=s=>{const o=[];for(let i=0;i<=N;i++){const v=xlog?Math.pow(10,tx(a0)+(tx(a1)-tx(a0))*i/N):a0+(a1-a0)*i/N;o.push(X(v).toFixed(1)+','+Y(fn(v,s)).toFixed(1))}return o.join(' ')};
+  const area=()=>{const o=[];for(let i=0;i<=N;i++){const v=xlog?Math.pow(10,tx(a0)+(tx(a1)-tx(a0))*i/N):a0+(a1-a0)*i/N;o.push(X(v).toFixed(1)+','+Y(fn(v,'nonNA')).toFixed(1))}return `M${X(a0)},${m.t+ih} L`+o.join(' L')+` L${X(a1)},${m.t+ih} Z`};
+  const cr=fn(cur,'nonNA'),ticks=xt||(xlog?[1,10,100,1000]:null);
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':'Predicted risk across '+xlab},
+    h('defs',null,h('linearGradient',{id:'gA'+xlab.length,x1:0,y1:0,x2:0,y2:1},h('stop',{offset:'0%',stopColor:'var(--chart)',stopOpacity:.22}),h('stop',{offset:'100%',stopColor:'var(--chart)',stopOpacity:0}))),
+    [0.01,0.1,1,10,100].map(v=>h('g',{key:v},h('line',{x1:m.l,x2:m.l+iw,y1:Y(v/100),y2:Y(v/100),stroke:'var(--line)'}),h('text',{x:m.l-6,y:Y(v/100)+4,fontSize:11,fill:'var(--muted)',textAnchor:'end'},v+'%'))),
+    (vlines||[]).map(([v,l],i)=>h('g',{key:l},h('line',{x1:X(v),x2:X(v),y1:m.t,y2:m.t+ih,stroke:'var(--faint)',strokeDasharray:'4 4'}),h('text',{className:'halo',x:X(v)+4,y:m.t+ih-8-i*14,fontSize:11,fill:'var(--muted)'},l))),
+    ths.map(p=>h('g',{key:p},h('line',{x1:m.l,x2:m.l+iw,y1:Y(p),y2:Y(p),stroke:'var(--bad)',strokeWidth:1.2,strokeDasharray:'2 3'}),h('text',{className:'halo',x:m.l+4,y:Y(p)-4,fontSize:11,fontWeight:700,fill:'var(--bad)'},(p*100)+'%'))),
+    h('path',{d:area(),fill:`url(#gA${xlab.length})`}),
+    h('polyline',{points:pts('NA'),fill:'none',stroke:'var(--chart-alt)',strokeWidth:1.6,strokeDasharray:'6 4'}),
+    h('polyline',{points:pts('nonNA'),fill:'none',stroke:'var(--chart)',strokeWidth:2.6}),
+    h('circle',{cx:X(cur),cy:Y(cr),r:6.5,fill:'var(--dot)',stroke:'var(--ring)',strokeWidth:2.5}),
+    h('text',{className:'halo',x:X(cur)+(X(cur)>m.l+iw*0.7?-9:9),textAnchor:X(cur)>m.l+iw*0.7?'end':'start',y:Y(cr)-9,fontSize:12,fontWeight:800,fill:'var(--ink)'},pct(cr)),
+    h('line',{x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih,stroke:'var(--muted)'}),
+    (ticks||[a0,(a0+a1)/2,a1].map(v=>Math.round(v))).map(v=>h('text',{key:'x'+v,x:X(v),y:m.t+ih+16,fontSize:11,fill:'var(--muted)',textAnchor:'middle'},v.toLocaleString('en-US'))),
+    h('text',{x:m.l+iw/2,y:H-5,fontSize:11.5,fill:'var(--muted)',textAnchor:'middle'},xlab));
+}
+// waterfall of hazard contributions, from the reference patient to this patient (2-year risk)
+function Waterfall({age,male,eg,acr,W}){
+  const t=terms(age,male,eg,acr),steps=[['Reference',0],['eGFR',t.egfr],['ACR',t.acr],['Age',t.age],['Sex',t.sex]];
+  let cum=0;const bars=steps.map(([k,v],i)=>{const from=i===0?0:cum;cum=i===0?0:cum+v;return {k,v,from,to:cum,r:risk(cum,'nonNA',2)}});
+  bars.push({k:'Patient',v:cum,from:0,to:cum,r:risk(cum,'nonNA',2),total:true});
+  const H=250,m={l:40,r:10,t:22,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b,vals=bars.flatMap(b=>[b.from,b.to]),lo=Math.min(-1,...vals)-0.3,hi=Math.max(1,...vals)+0.3;
+  const Y=v=>m.t+(1-(v-lo)/(hi-lo))*ih,bw=iw/bars.length;
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':'Waterfall of the KFRE linear predictor from the reference patient to this patient'},
+    h('line',{x1:m.l,x2:m.l+iw,y1:Y(0),y2:Y(0),stroke:'var(--muted)',strokeDasharray:'3 3'}),
+    h('text',{x:m.l-6,y:Y(0)+4,fontSize:10.5,fill:'var(--muted)',textAnchor:'end'},'ref'),
+    bars.map((b,i)=>{const x=m.l+i*bw+bw*0.16,w=bw*0.68,y0=Y(Math.max(b.from,b.to)),y1=Y(Math.min(b.from,b.to)),up=b.to>=b.from;
+      const col=b.total?'var(--chart)':i===0?'var(--faint)':up?'var(--bad)':'var(--primary)';
+      return h('g',{key:b.k},h('rect',{x,y:y0,width:w,height:Math.max(3,y1-y0),rx:6,fill:col,opacity:i===0?.5:.9}),
+        i>0&&!b.total?h('text',{x:x+w/2,y:(up?y0-6:y1+14),fontSize:11.5,fontWeight:800,fill:'var(--ink)',textAnchor:'middle'},(Math.exp(b.v)>=1?'×':'÷')+nf(Math.exp(b.v)>=1?Math.exp(b.v):1/Math.exp(b.v),Math.abs(b.v)<2.3?2:1)):null,
+        h('text',{x:x+w/2,y:H-24,fontSize:11.5,fontWeight:700,fill:'var(--muted)',textAnchor:'middle'},b.k),
+        h('text',{x:x+w/2,y:H-9,fontSize:11,fill:'var(--ink)',textAnchor:'middle',fontWeight:b.total?800:600},pct(b.r)))}));
+}
+function Hist({arr,ths,label,W}){
+  const H=140,m={l:10,r:10,t:24,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b,lo=-2,hi=2,nb=44,bins=new Array(nb).fill(0);
+  for(const x of arr){const v=Math.log10(Math.max(x*100,0.01));bins[Math.min(nb-1,Math.max(0,Math.floor((v-lo)/(hi-lo)*nb)))]++}
+  const mx=Math.max(...bins),X=v=>m.l+(v-lo)/(hi-lo)*iw,bw=iw/nb;
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':`Distribution of ${label} on simulated repeat testing`},
+    h('text',{x:m.l,y:14,fontSize:12.5,fontWeight:800,fill:'var(--ink)'},label),
+    bins.map((c,i)=>c?h('rect',{key:i,x:m.l+i*bw+0.6,y:m.t+ih-(c/mx)*ih,width:bw-1.2,height:(c/mx)*ih,rx:2,fill:'var(--chart)',opacity:.85}):null),
+    ths.map((p,i)=>h('g',{key:p},h('line',{x1:X(Math.log10(p*100)),x2:X(Math.log10(p*100)),y1:m.t-4,y2:m.t+ih,stroke:'var(--bad)',strokeWidth:1.5,strokeDasharray:'3 3'}),h('text',{className:'halo',x:X(Math.log10(p*100))+4,y:m.t+8+i*13,fontSize:11,fontWeight:700,fill:'var(--bad)'},(p*100)+'%'))),
+    h('line',{x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih,stroke:'var(--muted)'}),
+    [0.01,0.1,1,10,100].map(v=>h('text',{key:v,x:X(Math.log10(v)),y:H-8,fontSize:11,fill:'var(--muted)',textAnchor:v===0.01?'start':v===100?'end':'middle'},v+'%')));
+}
+function Donut({p,label}){
+  const r=30,c=2*Math.PI*r,edge=p>=0.2&&p<=0.8,col=edge?'var(--warn)':p>0.8?'var(--bad)':'var(--ok)';
+  return h('div',{className:'donut'},h('svg',{width:84,height:84,viewBox:'0 0 84 84',role:'img','aria-label':`${label}: ${Math.round(p*100)}% above`},
+    h('circle',{cx:42,cy:42,r,fill:'none',stroke:'var(--s2)',strokeWidth:9}),
+    h('circle',{className:'arc',cx:42,cy:42,r,fill:'none',stroke:col,strokeWidth:9,strokeLinecap:'round',strokeDasharray:`${c*p} ${c}`,transform:'rotate(-90 42 42)'}),
+    h('text',{x:42,y:47,fontSize:16,fontWeight:800,fill:'var(--ink)',textAnchor:'middle'},Math.round(p*100)+'%')),
+    h('div',null,label),h('div',{style:{color:col,fontSize:11.5}},edge?'near threshold':p>0.8?'stays above':'stays below'));
+}
+// cohort beeswarm-like strip by KDIGO category with the patient
+function CohortStrip({val,kd,W}){
+  const cats=[[2,'Moderate','mod'],[3,'High','high'],[4,'Very high','vhigh']],H=200,m={l:44,r:12,t:12,b:34},iw=W-m.l-m.r,ih=H-m.t-m.b,ylo=-2;
+  const Y=v=>m.t+(1-(Math.log10(Math.max(v,0.01))-ylo)/(2-ylo))*ih,cw=iw/3,rng=mulberry(7);
+  const kmap={mod:2,high:3,vhigh:4};
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':'Five-year risk of clinic patients by KDIGO category with this patient marked'},
+    [0.01,0.1,1,10,100].map(v=>h('g',{key:v},h('line',{x1:m.l,x2:m.l+iw,y1:Y(v),y2:Y(v),stroke:'var(--line)'}),h('text',{x:m.l-6,y:Y(v)+4,fontSize:11,fill:'var(--muted)',textAnchor:'end'},v+'%'))),
+    [3,5].map(t=>h('line',{key:t,x1:m.l,x2:m.l+iw,y1:Y(t),y2:Y(t),stroke:'var(--bad)',strokeDasharray:'2 3'})),
+    cats.map(([k,l,c],j)=>h('g',{key:k},COHORT.filter(x=>x[2]===k).map((x,i)=>h('circle',{key:i,cx:m.l+j*cw+cw/2+(rng()-0.5)*cw*0.55,cy:Y(x[3]),r:3.4,fill:`var(--kd-${c})`,opacity:.85})),
+      h('text',{x:m.l+j*cw+cw/2,y:H-12,fontSize:11.5,fontWeight:700,fill:'var(--muted)',textAnchor:'middle'},l))),
+    kmap[kd]?h('g',null,h('circle',{cx:m.l+(kmap[kd]-2)*cw+cw/2,cy:Y(val),r:8,fill:'var(--dot)',stroke:'var(--ring)',strokeWidth:3}),h('text',{className:'halo',x:m.l+(kmap[kd]-2)*cw+cw/2+12,y:Y(val)+4,fontSize:11.5,fontWeight:800,fill:'var(--ink)'},'patient')):null);
+}
+// stacked bars: share of clinic patients in each 5-year category by KDIGO
+function Stacked({W}){
+  const cats=[[2,'Moderate'],[3,'High'],[4,'Very high']],H=170,m={l:74,r:12,t:8,b:30},iw=W-m.l-m.r,bh=30,gap=14;
+  const parts=[['<3%',x=>x<3,'var(--ok)'],['3–5%',x=>x>=3&&x<=5,'var(--warn)'],['>5%',x=>x>5,'var(--bad)']];
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':'Share of clinic patients in each 5-year risk band by KDIGO category'},
+    cats.map(([k,l],i)=>{const xs=COHORT.filter(c=>c[2]===k).map(c=>c[3]),n=xs.length;let acc=0;const y=m.t+i*(bh+gap);
+      return h('g',{key:k},h('text',{x:m.l-8,y:y+bh/2+4,fontSize:12,fontWeight:700,fill:'var(--muted)',textAnchor:'end'},l),
+        parts.map(([pl,f,col])=>{const c=xs.filter(f).length,w=iw*c/n,x=m.l+acc*iw/n;acc+=c;return c?h('g',{key:pl},h('rect',{x,y,width:Math.max(1,w-2),height:bh,rx:6,fill:col,opacity:.85}),w>34?h('text',{x:x+w/2,y:y+bh/2+4,fontSize:11.5,fontWeight:800,fill:'#fff',textAnchor:'middle'},c):null):null}))}),
+    h('g',null,parts.map(([pl,,col],i)=>h('g',{key:pl},h('rect',{x:m.l+i*86,y:H-18,width:11,height:11,rx:3,fill:col}),h('text',{x:m.l+i*86+16,y:H-9,fontSize:11.5,fill:'var(--muted)'},'5-year '+pl)))));
+}
+// calibration comparison computed from the clinic data
+function CalibBars({W}){
+  const nn=COHORT.map(c=>({r5:c[3]/100,r2:c[4]/100})),na=nn.map(o=>({r5:risk(lpFromRisk(o.r5,'nonNA',5),'NA',5),r2:risk(lpFromRisk(o.r2,'nonNA',2),'NA',2)}));
+  const rows=[['5-year ≥3%',o=>o.r5>=0.03],['5-year >5%',o=>o.r5>0.05],['2-year >10%',o=>o.r2>0.10],['2-year >40%',o=>o.r2>0.40]];
+  const data=rows.map(([l,f])=>[l,nn.filter(f).length,na.filter(f).length]),mx=Math.max(...data.map(d=>d[2]));
+  const H=200,m={l:12,r:12,t:16,b:40},iw=W-m.l-m.r,ih=H-m.t-m.b,gw=iw/4,bw=Math.min(28,gw*0.3);
+  return h('svg',{className:'chart',viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:'img','aria-label':'Number of clinic patients above each threshold under two calibrations'},
+    data.map(([l,a,b],i)=>{const x=m.l+i*gw+gw/2,ya=m.t+ih*(1-a/mx),yb=m.t+ih*(1-b/mx);return h('g',{key:l},
+      h('rect',{x:x-bw-2,y:ya,width:bw,height:m.t+ih-ya,rx:5,fill:'var(--chart)'}),h('rect',{x:x+2,y:yb,width:bw,height:m.t+ih-yb,rx:5,fill:'var(--chart-alt)'}),
+      h('text',{x:x-bw/2-2,y:ya-5,fontSize:11.5,fontWeight:800,fill:'var(--ink)',textAnchor:'middle'},a),h('text',{x:x+bw/2+2,y:yb-5,fontSize:11.5,fontWeight:800,fill:'var(--ink)',textAnchor:'middle'},b),
+      h('text',{x,y:H-20,fontSize:11,fontWeight:700,fill:'var(--muted)',textAnchor:'middle'},l))}),
+    h('line',{x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih,stroke:'var(--muted)'}),
+    h('g',null,h('rect',{x:m.l,y:H-12,width:11,height:11,rx:3,fill:'var(--chart)'}),h('text',{x:m.l+16,y:H-3,fontSize:11.5,fill:'var(--muted)'},'Non-North American'),
+      h('rect',{x:m.l+150,y:H-12,width:11,height:11,rx:3,fill:'var(--chart-alt)'}),h('text',{x:m.l+166,y:H-3,fontSize:11.5,fill:'var(--muted)'},'North American')));
+}
+// ---------- presets ----------
+const PRESETS=[
+  ['Older woman, G4 A3','72-year-old woman, creatinine 230, ACR 300',{age:'72',sex:'F',scr:'230',scrU:'µmol/L',mode:'acr',acr:'300',acrU:'mg/g'}],
+  ['Younger man, G4 A3','50-year-old man, creatinine 290, ACR 800',{age:'50',sex:'M',scr:'290',scrU:'µmol/L',mode:'acr',acr:'800',acrU:'mg/g'}],
+  ['Discordant G3a A3','75-year-old woman, creatinine 95, ACR 1,000',{age:'75',sex:'F',scr:'95',scrU:'µmol/L',mode:'acr',acr:'1000',acrU:'mg/g'}],
+  ['Near the 3% threshold','68-year-old man, creatinine 190, ACR 12',{age:'68',sex:'M',scr:'190',scrU:'µmol/L',mode:'acr',acr:'12',acrU:'mg/g'}],
+  ['G5, older woman','78-year-old woman, creatinine 327, ACR 250',{age:'78',sex:'F',scr:'327',scrU:'µmol/L',mode:'acr',acr:'250',acrU:'mg/g'}]];
+const TABS=[['overview','Overview'],['map','Risk map'],['explain','Explain'],['repeat','Repeat tests'],['study','Study']];
+const THEMES=[['auto','Match device','linear-gradient(135deg,#FFFFFF 50%,#0A141D 50%)'],['light','Light','#FFFFFF'],['mint','Mint','#CBE7DB'],['sky','Sky','#C9DCF3'],['lavender','Lavender','#D9D0F1'],['peach','Peach','#F0D3BA'],['dark','Dark','#0A141D']];
+const Thumb=({src,w})=>h('span',{className:'thumb','aria-hidden':'true'},h('img',{src,alt:'',style:w?{maxWidth:w}:null}));
+function ThemePicker({pal,setPal}){return h('div',null,h('div',{className:'theme-label'},'Background'),h('div',{className:'themes',role:'group','aria-label':'Background colour'},THEMES.map(([k,l,c])=>h('button',{key:k,type:'button',title:l,'aria-label':l,'aria-pressed':pal===k,onClick:()=>setPal(k)},h('span',{style:{background:c}})))));}
+const Seg=({value,options,onChange,label})=>h('div',{className:'seg',role:'group','aria-label':label},options.map(([v,t])=>h('button',{key:v,type:'button','aria-pressed':value===v,onClick:()=>onChange(v)},t)));
+const Num=({id,value,onChange,unit})=>h('div',{className:'row'},h('input',{id,type:'number',inputMode:'decimal',value,step:'any',min:0,onChange:e=>onChange(e.target.value)}),unit||null);
+const Sel=({value,options,onChange,label})=>h('select',{value,'aria-label':label,onChange:e=>onChange(e.target.value)},options.map(o=>h('option',{key:o,value:o},o)));
+function Card({title,cap,info,children,cls}){const [o,setO]=useState(false);
+  return h('section',{className:'card '+(cls||'')},h('div',{className:'hdr'},h('div',null,h('h3',null,title),cap?h('div',{className:'cap'},cap):null),info?h('button',{className:'info',type:'button','aria-expanded':o,'aria-label':'How to read this chart',onClick:()=>setO(!o)},'i'):null),
+    children,(info&&o)?h('div',{className:'explain'},info):null);}
+function App(){
+  const [s,setS]=useState(Object.assign({alb:'150',ucr:'50',ucrU:'mg/dL',pcr:'500',pcrU:'mg/g',dm:false,htn:true},PRESETS[0][2]));
+  const set=k=>v=>setS(o=>Object.assign({},o,{[k]:v}));
+  const valid0=['overview','map','explain','repeat','study'],initTab=(location.hash||'').slice(1);
+  const [tab,setTab]=useState(valid0.includes(initTab)?initTab:'overview'),[drawer,setDrawer]=useState(false);
+  const [cv,setCv]=useState('lit'),[showCohort,setShowCohort]=useState(true),[showNA,setShowNA]=useState(false),[hz,setHz]=useState(2);
+  const [pal,setPal]=useState(()=>{try{return localStorage.getItem('kfre-palette')||'light'}catch(e){return 'light'}});
+  useEffect(()=>{const r=document.documentElement;if(pal==='auto')r.removeAttribute('data-palette');else r.setAttribute('data-palette',pal);try{localStorage.setItem('kfre-palette',pal)}catch(e){}},[pal]);
+  useEffect(()=>{const f=()=>{const t=(location.hash||'').slice(1);if(valid0.includes(t))setTab(t)};window.addEventListener('hashchange',f);return()=>window.removeEventListener('hashchange',f)},[]);
+  useEffect(()=>{const f=e=>{if(e.key==='Escape')setDrawer(false)};window.addEventListener('keydown',f);return()=>window.removeEventListener('keydown',f)},[]);
+  const go=t=>{setTab(t);try{history.replaceState(null,'','#'+t)}catch(e){location.hash=t}window.scrollTo(0,0)};
+  const [w1,ww1]=useWidth(700),[w2,ww2]=useWidth(400),[w3,ww3]=useWidth(400),[w4,ww4]=useWidth(400),[w5,ww5]=useWidth(400),[w6,ww6]=useWidth(400),[w7,ww7]=useWidth(400);
+  const A=parseFloat(s.age),male=s.sex==='M'?1:0,scr=parseFloat(s.scr)*(s.scrU==='mg/dL'?88.4:1);
+  let acr=NaN,acrNote=null;
+  if(s.mode==='acr')acr=parseFloat(s.acr)*(s.acrU==='mg/mmol'?8.84:1);
+  else if(s.mode==='alb'){acr=parseFloat(s.alb)/(parseFloat(s.ucr)*(s.ucrU==='mmol/L'?11.312:1))*100;acrNote='ACR calculated from urine albumin and creatinine.'}
+  else {acr=pcr2acr(parseFloat(s.pcr)*(s.pcrU==='mg/mmol'?8.84:1),1-male,s.dm?1:0,s.htn?1:0);acrNote='ACR estimated from PCR (Sumida 2020); less precise than measured ACR.'}
+  const valid=A>=18&&A<=110&&scr>0&&acr>0&&isFinite(acr),eg=valid?egfr2021(scr,A,!male):NaN,ok=valid&&eg<60,kd=valid?kdigo(eg,acr):null;
+  const R=useMemo(()=>{if(!ok)return null;const L=lp(A,male,eg,acr),cvs=cv==='lit'?[0.055,0.113]:[0.05,0.30];
+    const r={L,r2:risk(L,'nonNA',2),r5:risk(L,'nonNA',5),n2:risk(L,'NA',2),n5:risk(L,'NA',5),e40:isoEgfr(A,male,acr,0.40,'nonNA',2),e10:isoEgfr(A,male,acr,0.10,'nonNA',2),sim:simulate(A,male,scr,acr,cvs[0],cvs[1])};
+    r.pctile=HAS_COHORT?COHORT.filter(c=>c[3]<r.r5*100).length/COHORT.length:null;return r},[ok,A,male,eg,acr,cv,scr]);
+  // ---------- drawer ----------
+  const form=h('div',null,
+    h('div',{className:'field'},h('span',{className:'lab'},'Examples'),h('div',{className:'ex'},PRESETS.map(([n,d,p])=>h('button',{key:n,type:'button',onClick:()=>setS(o=>Object.assign({},o,p))},h('b',null,n),h('span',null,d))))),
+    h('div',{className:'field'},h('label',{htmlFor:'age'},'Age (years)'),h(Num,{id:'age',value:s.age,onChange:set('age')})),
+    h('div',{className:'field'},h('span',{className:'lab'},'Sex'),h(Seg,{label:'Sex',value:s.sex,onChange:set('sex'),options:[['F','Female'],['M','Male']]})),
+    h('div',{className:'field'},h('label',{htmlFor:'scr',style:{display:'flex',alignItems:'center',gap:8}},h(Thumb,{src:BLOOD_SRC,w:10}),'Serum creatinine'),h(Num,{id:'scr',value:s.scr,onChange:set('scr'),unit:h(Sel,{label:'Creatinine unit',value:s.scrU,onChange:set('scrU'),options:['µmol/L','mg/dL']})})),
+    h('div',{className:'field'},h('span',{className:'lab'},'Urine test'),h(Seg,{label:'Urine test',value:s.mode,onChange:set('mode'),options:[['acr','ACR'],['alb','Alb + Cr'],['pcr','PCR']]})),
+    s.mode==='acr'?h('div',{className:'field'},h('label',{htmlFor:'acr'},'Albumin-to-creatinine ratio'),h(Num,{id:'acr',value:s.acr,onChange:set('acr'),unit:h(Sel,{label:'ACR unit',value:s.acrU,onChange:set('acrU'),options:['mg/g','mg/mmol']})})):null,
+    s.mode==='alb'?h(React.Fragment,null,h('div',{className:'field'},h('label',{htmlFor:'alb'},'Urine albumin (mg/L)'),h(Num,{id:'alb',value:s.alb,onChange:set('alb')})),h('div',{className:'field'},h('label',{htmlFor:'ucr'},'Urine creatinine'),h(Num,{id:'ucr',value:s.ucr,onChange:set('ucr'),unit:h(Sel,{label:'Urine creatinine unit',value:s.ucrU,onChange:set('ucrU'),options:['mg/dL','mmol/L']})}))):null,
+    s.mode==='pcr'?h(React.Fragment,null,h('div',{className:'field'},h('label',{htmlFor:'pcr'},'Protein-to-creatinine ratio'),h(Num,{id:'pcr',value:s.pcr,onChange:set('pcr'),unit:h(Sel,{label:'PCR unit',value:s.pcrU,onChange:set('pcrU'),options:['mg/g','mg/mmol']})})),
+      h('label',{className:'check'},h('input',{type:'checkbox',checked:s.dm,onChange:e=>set('dm')(e.target.checked)}),'Diabetes'),h('label',{className:'check'},h('input',{type:'checkbox',checked:s.htn,onChange:e=>set('htn')(e.target.checked)}),'Hypertension')):null,
+    acrNote?h('div',{className:'cap',style:{marginTop:10}},acrNote):null,
+    valid?null:h('div',{className:'err'},'Enter an age of 18 or older and positive creatinine and urine values.'),h('div',{className:'field',style:{marginTop:22,paddingTop:16,borderTop:'1px solid var(--line)'}},h(ThemePicker,{pal,setPal})));
+  const drawerEl=drawer?h(React.Fragment,null,h('div',{className:'scrim',onClick:()=>setDrawer(false)}),h('aside',{className:'drawer',role:'dialog','aria-modal':'true','aria-label':'Patient details'},
+    h('div',{className:'dh'},h('div',{style:{display:'flex',alignItems:'center',gap:10}},h('div',{className:'plate',style:{padding:6,borderRadius:12}},h('img',{src:KIDNEY_SRC,alt:'',style:{width:20}})),h('b',null,'Patient details')),h('button',{className:'x',type:'button','aria-label':'Close',onClick:()=>setDrawer(false)},'×')),h('div',{className:'db'},form,h('button',{className:'btn primary',type:'button',style:{width:'100%',justifyContent:'center',marginTop:18},onClick:()=>setDrawer(false)},'Show results')))):null;
+  // ---------- chrome ----------
+  const sidebar=h('nav',{className:'sidebar','aria-label':'Sections'},
+    h('div',{className:'brand'},h('div',{className:'lg'},h('img',{src:KIDNEY_SRC,alt:''})),h('div',null,h('b',null,'KFRE Risk Map'),h('span',null,'KDIGO 2024 companion'))),
+    h('div',{className:'menu'},TABS.map(([id,t])=>h('button',{key:id,type:'button','aria-current':tab===id?'page':undefined,onClick:()=>go(id)},h(Ico,{n:id}),t))),
+    h(ThemePicker,{pal,setPal}),h('div',{className:'sidenote'},h('b',null,'Research tool. '),'The KFRE has not been validated in Vietnamese patients. Results support, and do not replace, clinical judgement.'));
+  const tabbar=h('nav',{className:'tabbar','aria-label':'Sections'},TABS.map(([id,t])=>h('button',{key:id,type:'button','aria-current':tab===id?'page':undefined,onClick:()=>go(id)},h(Ico,{n:id}),t)));
+  const mtop=h('div',{className:'mtop'},h('div',{className:'lg'},h('img',{src:KIDNEY_SRC,alt:''})),h('b',null,'KFRE Risk Map'),h('button',{className:'btn primary',type:'button',onClick:()=>setDrawer(true)},h(Ico,{n:'edit'}),'Patient'));
+  const chips=valid?h('div',{className:'pchips'},h('span',{className:'pchip'},(s.sex==='F'?'Female':'Male')+', '+A),h('span',{className:'pchip'},h('span',null,'eGFR'),nf(eg,1)),h('span',{className:'pchip'},h('span',null,'ACR'),nf(acr,acr<10?1:0)),h('span',{className:'pchip'},h('span',null,'KDIGO'),gCat(eg)+' '+aCat(acr))):null;
+  const TITLES={overview:['Overview','Risk, KDIGO grade and the decisions they trigger'],map:['Risk map','Where the patient sits on the eGFR–ACR plane'],explain:['Explain','What drives the estimate and how it changes'],repeat:['Repeat tests','How stable the classification is'],study:['The study','Findings from 129 patients at Lanh Binh Thang General Hospital']};
+  const top=h('div',{className:'top'},h('div',null,h('h1',null,TITLES[tab][0]),h('div',{className:'sub'},TITLES[tab][1])),h('div',{className:'actions'},chips,h('button',{className:'btn primary',type:'button',onClick:()=>setDrawer(true)},h(Ico,{n:'edit'}),'Edit patient')));
+  const mchips=h('div',{style:{marginBottom:14}},h('div',{className:'top',style:{marginBottom:10}},h('div',null,h('h1',null,TITLES[tab][0]),h('div',{className:'sub'},TITLES[tab][1]))),chips);
+  let body;
+  if(tab==='study') body=Study(w7,ww7);
+  else if(!ok) body=h('div',{className:'card empty'},h('div',{className:'plate'},h('img',{src:KIDNEY_SRC,alt:'',style:{width:64}})),h('div',null,h('h3',null,'No KFRE estimate'),h('p',{className:'cap'},valid?`The KFRE applies to eGFR below 60 mL/min/1.73 m². This patient’s eGFR is ${nf(eg,1)}; KDIGO 2024 ${gCat(eg)} ${aCat(acr)} (${KDNAME[kd].toLowerCase()}).`:'Open the patient panel to enter details.'),h('button',{className:'btn primary',type:'button',onClick:()=>setDrawer(true)},h(Ico,{n:'edit'}),'Edit patient')));
+  else if(tab==='overview'){
+    const st=(p,ths)=>p>ths[1]?['bad','Above '+(ths[1]*100)+'%']:p>(ths[0]===0.03?0.0299999:ths[0])?['warn','Above '+(ths[0]*100)+'%']:['ok','Below '+(ths[0]*100)+'%'];
+    const s2=st(R.r2,[0.10,0.40]),s5=st(R.r5,[0.03,0.05]);
+    const rows=[['Step 1','Nephrology referral and follow-up','5-year ≥3%',R.r5>=0.03,'eGFR <30',eg<30],['Step 2','Multidisciplinary CKD care','2-year >10%',R.r2>0.10,'eGFR <30',eg<30],['Step 3','Prepare for kidney replacement therapy','2-year >40%',R.r2>0.40,'eGFR <20',eg<20]];
+    const labs=h('div',{className:'c12 labs'},
+      h('div',{className:'labt'},h('div',{className:'pl'},h('img',{src:KIDNEY_SRC,alt:'',style:{maxHeight:40}})),h('div',{style:{minWidth:0}},h('div',{className:'k'},'Patient'),h('div',{className:'v'},(s.sex==='F'?'Female':'Male')+', '+A))),
+      h('div',{className:'labt'},h('div',{className:'pl'},h('img',{src:BLOOD_SRC,alt:'',style:{maxHeight:44}})),h('div',{style:{minWidth:0}},h('div',{className:'k'},'Serum creatinine'),h('div',{className:'v'},nf(scr,0),h('small',null,'µmol/L')))),
+      h('div',{className:'labt'},h('div',{className:'pl'},h('div',{className:'neph',dangerouslySetInnerHTML:{__html:NEPHRON_SVG}})),h('div',{style:{minWidth:0}},h('div',{className:'k'},'eGFR (CKD-EPI 2021)'),h('div',{className:'v'},nf(eg,1),h('small',null,'mL/min')))),
+      h('div',{className:'labt'},h('div',{className:'pl'},h('img',{src:URINE_SRC,alt:'',style:{maxWidth:48}})),h('div',{style:{minWidth:0}},h('div',{className:'k'},'Urine ACR'),h('div',{className:'v'},nf(acr,acr<10?1:0),h('small',null,'mg/g')))));
+    body=h('div',{className:'grid g12'},labs,
+      h(Card,{cls:'c4 gauge-card',title:'2-year kidney failure risk'},h('div',{ref:w2,style:{width:'100%'}},h(Gauge,{p:R.r2,ths:[0.10,0.40],size:Math.min(ww2,300)})),h('div',{className:'alt'},'North American calibration '+pct(R.n2)),h('span',{className:'status '+s2[0]},s2[1])),
+      h(Card,{cls:'c4 gauge-card',title:'5-year kidney failure risk'},h('div',{style:{width:'100%'}},h(Gauge,{p:R.r5,ths:[0.03,0.05],size:Math.min(ww2,300)})),h('div',{className:'alt'},'North American calibration '+pct(R.n5)),h('span',{className:'status '+s5[0]},s5[1])),
+      h(Card,{cls:'c4',title:[h(Thumb,{key:'t',src:HEART_SRC,w:16}),h('span',{key:'s'},'KDIGO 2024 heat map')],cap:KDNAME[kd]+' · reflects kidney and cardiovascular risk; cells show clinic n and median 5-year risk',info:'Cells are coloured by the KDIGO 2024 risk grade, which reflects mortality, cardiovascular events, acute kidney injury and kidney failure together. Numbers show how many of the 129 study patients fell in each cell and their median 5-year KFRE risk.'},h('div',{ref:w3},h(HeatGrid,{g:gCat(eg),a:aCat(acr),W:ww3}))),
+      h(Card,{cls:'c12',title:'Decisions',cap:'KDIGO 2024 risk-based thresholds and the eGFR criteria they complement'},
+        h('div',{className:'steps'},rows.map(([n,t,rl,rm,el,em])=>h('div',{key:n,className:'step'},h('div',{className:'n',style:{display:'flex',justifyContent:'space-between',alignItems:'center',minHeight:28}},n,n==='Step 1'?h(Thumb,{src:KIDNEY_SRC,w:16}):n==='Step 2'?h('span',{className:'thumb',style:{width:46}},h('img',{src:PILL_SRC,alt:'',style:{maxWidth:40}})):n==='Step 3'?h('div',{className:'plate',title:'Dialyser',style:{width:82,height:28,padding:0,borderRadius:9,overflow:'hidden',position:'relative',display:'block'}},h('img',{src:DIALYSIS_SRC,alt:'',style:{height:72,width:'auto',position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%) rotate(90deg)'}})):null),h('div',{className:'t'},t),
+          h('div',{className:'crit'},h('span',null,'KFRE '+rl),h('em',{className:rm?'y':'n'},rm?'Met':'Not met')),h('div',{className:'crit'},h('span',null,el),h('em',{className:em?'y':'n'},em?'Met':'Not met')),
+          h('div',{className:'res '+(rm||em?'y':'n')},rm&&em?'Indicated':rm?'Indicated by KFRE':em?'Indicated by eGFR':'Not yet indicated')))),
+        (kd==='vhigh'&&R.r5<0.03)?h('div',{className:'callout info',style:{display:'flex',gap:12,alignItems:'flex-start'}},h(Thumb,{src:HEART_SRC,w:16}),h('div',null,h('b',null,'KDIGO and KFRE disagree. '),'Very high risk on the heat map, but a 5-year KFRE below 3%. The heat map also reflects mortality and cardiovascular risk; follow-up for albuminuria remains warranted.')):null,
+        (!male&&A>=65&&R.r2<=0.40&&R.e40<10)?h('div',{className:'callout'},h('b',null,'Late trigger in an older woman. '),R.e40>0?`At the current ACR, the 2-year risk reaches 40% only at eGFR ${nf(R.e40,1)}. `:'At the current ACR, the 2-year risk never reaches 40%. ','Use an eGFR criterion below 20 alongside the 40% threshold.'):null),
+      HAS_COHORT&&h(Card,{cls:'c12',title:'Clinic comparison',cap:`5-year risk higher than ${Math.round(R.pctile*100)}% of ${COHORT.length} clinic patients (${ord(Math.round(R.pctile*100))} percentile)`},h('div',{ref:w4},h(CohortStrip,{val:R.r5*100,kd,W:ww4}))));
+  } else if(tab==='map'){
+    body=h('div',{className:'grid g12'},h(Card,{cls:'c12',title:'eGFR–ACR risk map',cap:`Contours join every eGFR and ACR that give the same KFRE risk for a ${s.sex==='F'?'woman':'man'} aged ${A}`,info:h(React.Fragment,null,h('b',null,'How to read it. '),'Risk rises towards the lower right. A patient above a contour is below that threshold. The dashed drop line shows how far eGFR must fall, at the current ACR, before the 2-year risk reaches 40%. Contours slope because the KFRE weighs one GFR step (×5.3) about 1.6 times more than one albuminuria step (×2.8), whereas the heat map treats the two axes equally.')},
+      h('div',{className:'toggles',style:{marginBottom:8}},HAS_COHORT&&h('button',{className:'tg',type:'button','aria-pressed':showCohort,onClick:()=>setShowCohort(!showCohort)},'Clinic patients'),h('button',{className:'tg',type:'button','aria-pressed':showNA,onClick:()=>setShowNA(!showNA)},'North American calibration')),
+      h('div',{ref:w1},h(RiskMap,{age:A,male,eg,acr,showCohort,showNA,W:ww1})),
+      h('div',{className:'legend'},h('span',null,h('i',{className:'sw',style:{background:'var(--kd-mod)'}}),'Moderate'),h('span',null,h('i',{className:'sw',style:{background:'var(--kd-high)'}}),'High'),h('span',null,h('i',{className:'sw',style:{background:'var(--kd-vhigh)'}}),'Very high'),h('span',null,h('i',{className:'ln'}),'Solid 5-yr 3% · dashed 2-yr 10% · dotted 2-yr 40%'))),
+      h('div',{className:'c12 kpis'},[['2-year risk',pct(R.r2)],['5-year risk',pct(R.r5)],['eGFR at 2-year 40%',R.e40>0?nf(R.e40,1):'never'],['eGFR at 2-year 10%',R.e10>0?nf(R.e10,1):'never']].map(([k,v])=>h('div',{key:k,className:'kpi'},h('div',{className:'k'},k),h('div',{className:'v'},v)))));
+  } else if(tab==='explain'){
+    const ths=hz===2?[0.10,0.40]:[0.03,0.05];
+    body=h('div',{className:'grid g12'},
+      h('div',{className:'c12 banner'},h('div',null,h('h3',null,'Four inputs, one equation'),h('p',null,'The KFRE combines age, sex, eGFR and urine ACR into a single linear predictor. eGFR dominates: one KDIGO GFR step multiplies the hazard by 5.3, one albuminuria step by 2.8, male sex by 1.28, and each extra decade of age lowers it by 20%.'),h('div',{className:'facts'},h('span',null,'GFR step ×5.31'),h('span',null,'Albuminuria step ×2.82'),h('span',null,'Male ×1.28'),h('span',null,'+10 years ×0.80'))),h('div',{className:'neph',dangerouslySetInnerHTML:{__html:NEPHRON_SVG}})),
+      h(Card,{cls:'c12',title:'From the reference patient to this patient',cap:'2-year risk as each variable is applied in turn',info:'The KFRE reference patient is 70 years old, 56% male, with eGFR 36.1 and ACR 170 mg/g (2-year risk 1.68%). Each bar multiplies the hazard by the factor shown; red raises risk, teal lowers it. In the study cohort, eGFR explained 70% of between-patient variation, ACR 27%, age 3% and sex 1%.'},h('div',{ref:w5},h(Waterfall,{age:A,male,eg,acr,W:ww5}))),
+      h('div',{className:'c12 toggles'},h('button',{className:'tg',type:'button','aria-pressed':hz===2,onClick:()=>setHz(2)},'2-year risk'),h('button',{className:'tg',type:'button','aria-pressed':hz===5,onClick:()=>setHz(5)},'5-year risk')),
+      h(Card,{cls:'c6',title:'If eGFR falls',cap:'Age, sex and ACR held constant',info:'Grey lines mark the eGFR criteria. Where the curve crosses a red threshold to the right of its grey line, the KFRE criterion would be met later than the eGFR criterion. The dashed curve uses North American calibration.'},h('div',{ref:w6},h(WhatIf,{xs:[60,2],fn:(v,set)=>risk(lp(A,male,v,acr),set,hz),cur:eg,ths,xlab:'eGFR (mL/min/1.73 m²)',xt:[60,45,30,15,2],vlines:hz===2?[[30,'eGFR 30'],[20,'eGFR 20']]:[[30,'eGFR 30']],W:ww6}))),
+      h(Card,{cls:'c6',title:'If albuminuria changes',cap:'Age, sex and eGFR held constant',info:'Grey lines mark the KDIGO albuminuria boundaries (30 and 300 mg/g). A tenfold change in ACR changes the hazard 2.8-fold.'},h(WhatIf,{xs:[1,5000],xlog:true,fn:(v,set)=>risk(lp(A,male,eg,v),set,hz),cur:acr,ths,xlab:'ACR (mg/g, log scale)',vlines:[[30,'A2'],[300,'A3']],W:ww6})),
+      h(Card,{cls:'c6',title:'If the patient were older or younger',cap:'Sex, eGFR and ACR held constant',info:'Older age lowers predicted risk because, on average, older patients progress more slowly and more often die before kidney failure. This is why the 40% threshold is reached late in older adults.'},h(WhatIf,{xs:[20,90],fn:(v,set)=>risk(lp(v,male,eg,acr),set,hz),cur:A,ths,xlab:'Age (years)',xt:[20,40,60,80,90],W:ww6})),
+      h(Card,{cls:'c6',title:'Female versus male',cap:'Same age, eGFR and ACR'},(()=>{const f=risk(lp(A,0,eg,acr),'nonNA',hz),mm=risk(lp(A,1,eg,acr),'nonNA',hz),mx=Math.max(f,mm);return h('div',null,
+        [['Female',f,!male],['Male',mm,!!male]].map(([l,v,me])=>h('div',{key:l,style:{margin:'14px 0'}},h('div',{style:{display:'flex',justifyContent:'space-between',fontSize:13,fontWeight:700}},h('span',null,l+(me?' (this patient)':'')),h('span',null,pct(v))),
+          h('div',{style:{height:14,background:'var(--s2)',borderRadius:8,marginTop:6,overflow:'hidden'}},h('div',{style:{width:(100*v/mx)+'%',height:'100%',background:me?'var(--chart)':'var(--chart-alt)',borderRadius:8}})))),
+        h('div',{className:'cap'},'Male sex multiplies the hazard by 1.28, equivalent to an eGFR about 2.2 mL/min/1.73 m² lower.'))})()));
+  } else if(tab==='repeat'){
+    body=h('div',{className:'grid g12'},
+      h('div',{className:'c12 banner'},h('div',null,h('h3',null,'One sample is a snapshot'),h('p',null,'Urine ACR varies from day to day, and creatinine varies less but still moves. Near a threshold, a single result can fall on either side. This screen simulates repeat samples to show how often the decision would change.'),h('div',{className:'facts'},h('span',null,'ACR day-to-day CV 11.3%'),h('span',null,'Creatinine CV 5.5%'),h('span',null,'3,000 simulated repeats'))),h('div',{className:'plate'},h('img',{src:URINE_SRC,alt:'Urine sample with a reagent test strip',style:{width:170}}))),
+      h('div',{className:'c12 toggles'},h('button',{className:'tg',type:'button','aria-pressed':cv==='lit',onClick:()=>setCv('lit')},'Published variability (ACR 11.3%)'),h('button',{className:'tg',type:'button','aria-pressed':cv==='wide',onClick:()=>setCv('wide')},'Conservative (ACR 30%)')),
+      h(Card,{cls:'c12',title:'Chance of being above each threshold on a repeat test',cap:'3,000 simulated repeat measurements of creatinine and ACR',info:'A probability between 20% and 80% means a single repeat test could change the decision. Repeat ACR and creatinine before acting on a borderline result.'},h('div',{className:'donuts'},R.sim.p.map(([k,p])=>h(Donut,{key:k,p,label:k})))),
+      h(Card,{cls:'c6',title:[h(Thumb,{key:'t',src:BLOOD_SRC,w:9}),h('span',{key:'s'},'2-year risk on repeat testing')]},h('div',{ref:w6},h(Hist,{arr:R.sim.r2,ths:[0.10,0.40],label:'Distribution',W:ww6}))),
+      h(Card,{cls:'c6',title:[h(Thumb,{key:'t',src:BLOOD_SRC,w:9}),h('span',{key:'s'},'5-year risk on repeat testing')]},h(Hist,{arr:R.sim.r5,ths:[0.03,0.05],label:'Distribution',W:ww6})));
+  }
+  return h('div',{className:'shell'},sidebar,h('main',{className:'main'},mtop,top,body,h('div',{className:'credits'},'Illustrations: kidney by Servier Medical Art (CC BY 3.0) and nephron by Emily A. Daniel (CC0), via Bioicons; dialyser, urine test, blood tube, tablets, heart and book by Science Figures (sciencefigures.org). KFRE Risk Map v2.2, November 2026.')),tabbar,drawerEl);
+}
+function Study(ref,W){
+  return h('div',{className:'grid g12'},
+    h('div',{className:'c12 hero'},h('div',null,h('h2',null,'KFRE versus the KDIGO 2024 heat map'),h('p',null,'Cross-sectional study of 129 outpatients with CKD G3–G5 at Lanh Binh Thang General Hospital, Ho Chi Minh City (May–September 2026). The study compared KFRE-based and heat-map risk stratification and decomposed the KFRE mathematically to explain where, and why, the two disagree.')),h('div',{className:'nephron',dangerouslySetInnerHTML:{__html:NEPHRON_SVG}})),
+    h('div',{className:'c12 findings'},[['63/64','patients with a 5-year risk of 3% or more were already very high risk by KDIGO.'],['12','very-high-risk patients had a 5-year risk below 3%, eight of them in cell G3a–A3.'],['×1.6','weight of one GFR step relative to one albuminuria step; eGFR explained 70% of variation.'],['eGFR 6.6','where a 70-year-old woman with ACR 300 mg/g reaches a 2-year risk of 40%.'],['5 → 14','patients above 40% with North American instead of non-North American constants.'],['1 in 5','patients could change category on a single repeat test.']].map(([n,t])=>h('div',{key:n,className:'finding'},h('div',{className:'n'},n),h('p',null,t)))),
+    HAS_COHORT&&h(Card,{cls:'c6',title:'5-year risk bands by KDIGO category',cap:'Number of clinic patients in each band'},h('div',{ref},h(Stacked,{W}))),
+    HAS_COHORT&&h(Card,{cls:'c6',title:'Calibration changes the 40% decision',cap:'Clinic patients above each threshold under two calibrations'},h(CalibBars,{W})),
+    !HAS_COHORT&&h('div',{className:'c12 card'},h('h3',null,'Clinic data not included'),h('p',{className:'cap'},'This build does not include the de-identified clinic dataset (assets/js/cohort.js), so charts based on the study cohort are hidden. The calculator itself is unaffected.')),
+    h('div',{className:'c12 card'},h('h3',null,'Cite this tool'),h('p',{className:'cap',style:{marginBottom:0}},'Nguyễn TTA, Lâm HT, Huỳnh HN, Trần NTH, Lâm KT, Lê VC. KFRE Risk Map (version 2.2.0) [software]. Zenodo; 2026. doi:10.5281/zenodo.XXXXXXX')),
+    h('details',{className:'acc c12'},h('summary',null,h('span',{style:{display:'inline-flex',alignItems:'center',gap:10}},h(Thumb,{src:BLOOD_SRC,w:9}),'Methods and equations')),h('div',{className:'methods'},
+      h('p',null,h('b',null,'eGFR. '),'2021 CKD-EPI creatinine equation without a race term. Creatinine in mg/dL is converted with 88.4; ACR in mg/mmol with 8.84; urine creatinine in mmol/L with 11.31.'),
+      h('p',null,h('b',null,'KFRE (4-variable). '),h('span',{className:'eq'},'LP = −0.2201(age/10 − 7.036) + 0.2467(male − 0.5642) − 0.5567(eGFR/5 − 7.222) + 0.4510(ln ACR − 5.137)'),'Risk = 1 − S^exp(LP); S = 0.9832 (2-year) and 0.9365 (5-year) outside North America; 0.9750 and 0.9240 in North America.'),
+      h('p',null,h('b',null,'Thresholds. '),'KDIGO 2024: 5-year 3–5% for referral, 2-year >10% for multidisciplinary care, 2-year >40% for KRT preparation; eGFR criteria <30, <30 and <20. NICE NG203: 5-year >5%.'),
+      h('p',null,h('b',null,'Contours, what-if curves and waterfall. '),'Solved directly from the equation, holding the other variables constant.'),
+      h('p',null,h('b',null,'Repeat testing. '),'3,000 draws from mean-preserving log-normal distributions with published day-to-day variability (creatinine 5.5%, ACR 11.3%; McCudden 2018) or a conservative alternative (5% and 30%).'),
+      h('p',null,h('b',null,'PCR conversion. '),'Sumida 2020, adjusted for sex, diabetes and hypertension.'),
+      h('p',null,h('b',null,'Clinic data. '),'eGFR, ACR, KDIGO grade and KFRE risk of 129 de-identified patients.'),
+      h('p',null,h('b',null,'Limitations. '),'No outcome data to check calibration in Vietnamese patients; death not modelled as a competing event; single measurements.'))),
+    h('details',{className:'acc c12'},h('summary',null,h('span',{style:{display:'inline-flex',alignItems:'center',gap:10}},h(Thumb,{src:BOOK_SRC,w:16}),'References')),h('ol',{className:'refs'},
+      ['Tangri N, et al. JAMA. 2011;305:1553–9.','Tangri N, et al. JAMA. 2016;315:164–74.','KDIGO CKD Work Group. Kidney Int. 2024;105(4S):S117–S314.','NICE. Chronic kidney disease: assessment and management (NG203). 2021.','Inker LA, et al. N Engl J Med. 2021;385:1737–49.','Writing Group for the CKD Prognosis Consortium. JAMA. 2023;330:1266–77.','Grams ME, et al. J Am Soc Nephrol. 2023;34:482–94.','Sumida K, et al. Ann Intern Med. 2020;173:426–35.','McCudden C, et al. PLoS One. 2018;13:e0198456.','Ramspek CL, et al. Int J Epidemiol. 2022;51:615–25.'].map((r,i)=>h('li',{key:i},r)))));
+}
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+})();
+</script>
+</body>
+</html>

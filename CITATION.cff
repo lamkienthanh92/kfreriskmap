@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "KFRE Risk Map"
+abstract: "Browser-based companion tool that calculates 2- and 5-year kidney failure risk with the 4-variable Kidney Failure Risk Equation and sets it against the KDIGO 2024 heat map, with a risk map, action thresholds, driver decomposition and repeat-test simulation."
+version: 2.2.0
+date-released: 2026-11-12
+license: MIT
+repository-code: "https://github.com/YOUR-USER/kfre-risk-map"
+doi: 10.5281/zenodo.XXXXXXX
+keywords:
+  - chronic kidney disease
+  - kidney failure risk equation
+  - KDIGO
+  - risk stratification
+  - clinical decision support
+authors:
+  - family-names: "Nguyễn"
+    given-names: "Thụy Trâm Anh"
+    affiliation: "Department of Nephrology, Lanh Binh Thang General Hospital, Ho Chi Minh City, Vietnam"
+  - family-names: "Lâm"
+    given-names: "Hà Thu"
+    affiliation: "Department of Nephrology, Lanh Binh Thang General Hospital, Ho Chi Minh City, Vietnam"
+  - family-names: "Huỳnh"
+    given-names: "Hoài Nam"
+    affiliation: "Department of Nephrology, Lanh Binh Thang General Hospital, Ho Chi Minh City, Vietnam"
+  - family-names: "Trần"
+    given-names: "Nguyễn Thu Hiền"
+    affiliation: "Department of Nephrology, Lanh Binh Thang General Hospital, Ho Chi Minh City, Vietnam"
+  - family-names: "Lâm"
+    given-names: "Kiến Thành"
+  - family-names: "Lê"
+    given-names: "Văn Chương"
