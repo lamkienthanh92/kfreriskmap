@@ -3,11 +3,11 @@ message: "If you use this software, please cite it as below."
 type: software
 title: "KFRE Risk Map"
 abstract: "Browser-based companion tool that calculates 2- and 5-year kidney failure risk with the 4-variable Kidney Failure Risk Equation and sets it against the KDIGO 2024 heat map, with a risk map, action thresholds, driver decomposition and repeat-test simulation."
-version: 2.2.0
-date-released: 2026-11-12
+version: 2.3.0
+date-released: 2026-11-13
 license: MIT
-repository-code: "https://github.com/YOUR-USER/kfre-risk-map"
-doi: 10.5281/zenodo.XXXXXXX
+repository-code: "https://github.com/lamkienthanh92/kfreriskmap"
+doi: 10.5281/zenodo.24150074
 keywords:
   - chronic kidney disease
   - kidney failure risk equation

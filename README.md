@@ -1,10 +1,14 @@
 # KFRE Risk Map
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+**English** · [Tiếng Việt](README.vi.md) · [日本語](README.ja.md) · [中文](README.zh.md) · [Français](README.fr.md)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24150074.svg)](https://doi.org/10.5281/zenodo.24150074)
 
 **KFRE Risk Map** is a browser-based companion tool to a cross-sectional study of 129 outpatients with chronic kidney disease (CKD) G3–G5 at Lanh Binh Thang General Hospital, Ho Chi Minh City, Vietnam. It calculates 2- and 5-year kidney failure risk with the 4-variable Kidney Failure Risk Equation (KFRE) and sets the result against the KDIGO 2024 eGFR–albuminuria heat map.
 
-**Live version:** https://YOUR-SITE.netlify.app
+**Live version:** https://kfreriskmap.netlify.app – [English](https://kfreriskmap.netlify.app/?lang=en) · [Tiếng Việt](https://kfreriskmap.netlify.app/?lang=vi) · [日本語](https://kfreriskmap.netlify.app/?lang=ja) · [中文](https://kfreriskmap.netlify.app/?lang=zh) · [Français](https://kfreriskmap.netlify.app/?lang=fr)
+
+The interface is available in English (the default), Vietnamese, Japanese, Chinese and French. Choose the language in the sidebar (in the patient panel on phones) or add `?lang=` to the address; the choice is remembered in the browser.
 
 ![KFRE Risk Map overview](assets/screenshot.png)
 
@@ -34,7 +38,8 @@ python3 -m http.server 8000
 ## Repository layout
 
 ```
-index.html              the application (React 18 UMD, no build step)
+index.html              the application (React 18 UMD, no build step; five interface languages)
+README.*.md             this README in Vietnamese, Japanese, Chinese and French
 assets/img/             illustrations (see ATTRIBUTION.md)
 assets/js/cohort.js     de-identified clinic data (optional, see below)
 vendor/react/           React 18.3.1 production builds (MIT)
@@ -49,7 +54,7 @@ CITATION.cff            citation metadata (GitHub "Cite this repository")
 
 ## How to cite
 
-Nguyễn TTA, Lâm HT, Huỳnh HN, Trần NTH, Lâm KT, Lê VC. KFRE Risk Map (version 2.2.0) [software]. Zenodo; 2026. doi:10.5281/zenodo.XXXXXXX
+Nguyễn TTA, Lâm HT, Huỳnh HN, Trần NTH, Lâm KT, Lê VC. KFRE Risk Map (version 2.3.0) [software]. Zenodo; 2026. doi:10.5281/zenodo.24150074
 
 ## Key references
 

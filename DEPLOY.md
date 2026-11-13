@@ -34,3 +34,9 @@ Two routes are possible. Route A (manual upload) is described step by step in `Z
 5. Copy the DOI and replace `10.5281/zenodo.XXXXXXX` in `README.md`, `CITATION.cff` and the "Cite this tool" card in `index.html`. Commit the change. Zenodo also gives a "concept DOI" that always points to the latest version; use it if you want one DOI for all versions.
 
 Before step 3, confirm the author list, ORCID iDs and affiliations in `.zenodo.json` and `CITATION.cff`, and confirm that publishing `assets/js/cohort.js` is covered by your ethics approval. A Zenodo record cannot be deleted after publication.
+
+
+## Releasing version 2.3.0 (five languages)
+1. Replace the repository files with this package and push to GitHub; Netlify redeploys automatically.
+2. Language links: `https://kfreriskmap.netlify.app/?lang=en` (also `vi`, `ja`, `zh`, `fr`).
+3. Zenodo: create a GitHub release tagged `v2.3.0` (with the GitHub integration on), or open the record and choose **New version**, upload the zip, set Version to 2.3.0 and publish. The concept DOI 10.5281/zenodo.24150074 keeps pointing to the latest version.
